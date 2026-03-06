@@ -9,6 +9,7 @@
   --color-strawberry: #ffccd5;
   --color-tiramisu: #e6ccb2;
   --color-samyang: #ffb5a7;
+  --color-samyang-spicy: #dc2626;
   --color-piscok: #9c6644;
 }
 
@@ -35,6 +36,7 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
   transition: background-color 0.8s ease-in-out;
+  overflow-x: hidden;
 }
 
 /* Hide scrollbar for Chrome, Safari and Opera */

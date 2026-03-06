@@ -36,25 +36,25 @@ export default function ProductDetailPage() {
     <div className="min-h-screen bg-white font-sans selection:bg-black selection:text-white">
       <Navbar />
 
-      <main className="pt-32 pb-40 px-6 max-w-7xl mx-auto">
+      <main className="pt-40 md:pt-32 pb-32 md:pb-40 px-6 max-w-7xl mx-auto">
         <Link
           href="/products"
-          className="flex items-center gap-2 text-sm font-bold text-gray-400 hover:text-black transition-colors mb-12 group"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#e75a40]/10 text-[#e75a40] text-xs font-black uppercase tracking-widest hover:bg-[#e75a40] hover:text-white transition-all duration-300 mb-10 group shadow-sm border border-[#e75a40]/20"
         >
-          <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
-          Kembali ke Daftar Produk
+          <ArrowLeft className="w-3.5 h-3.5 transition-transform group-hover:-translate-x-1" />
+          Daftar Produk
         </Link>
 
-        <div className="flex flex-col lg:flex-row gap-16 md:gap-24">
+        <div className="flex flex-col lg:flex-row gap-8 lg:gap-24">
           {/* Left: Product Image Section */}
           <div className="flex-1">
             <div
-              className="relative aspect-square rounded-[3rem] overflow-hidden flex items-center justify-center p-12 transition-all duration-700"
+              className="relative aspect-square rounded-[2rem] md:rounded-[3rem] overflow-hidden flex items-center justify-center p-8 md:p-12 transition-all duration-700"
               style={{ backgroundColor: `${product.bg}30` }}
             >
               {/* Floating Badge */}
-              <div className="absolute top-8 left-8 z-10">
-                <span className="bg-white text-black font-black text-xs uppercase tracking-[0.2em] px-5 py-2 rounded-full shadow-lg">
+              <div className="absolute top-6 left-6 md:top-8 md:left-8 z-10">
+                <span className="bg-white text-black font-black text-[10px] md:text-xs uppercase tracking-[0.2em] px-4 py-1.5 md:px-5 md:py-2 rounded-full shadow-lg">
                   Best Seller
                 </span>
               </div>
@@ -107,13 +107,13 @@ export default function ProductDetailPage() {
                   </span>
                 </div>
               </div>
-              <h1 className="text-5xl md:text-6xl font-black text-black mb-6 leading-none tracking-tight">
+              <h1 className="text-3xl md:text-6xl font-black text-black mb-4 md:mb-6 leading-none tracking-tight">
                 {product.name}
               </h1>
-              <p className="text-3xl font-black text-[#e75a40] mb-8">
+              <p className="text-2xl md:text-3xl font-black text-[#e75a40] mb-6 md:mb-8">
                 {product.price}
               </p>
-              <p className="text-gray-500 font-medium text-lg leading-relaxed mb-10">
+              <p className="text-gray-500 font-medium text-base md:text-lg leading-relaxed mb-8 md:mb-10">
                 {product.longDesc}
               </p>
             </div>
@@ -128,7 +128,7 @@ export default function ProductDetailPage() {
                   <span className="text-[10px] uppercase font-black text-gray-400 tracking-widest mb-1">
                     {key}
                   </span>
-                  <span className="text-lg font-black text-black">
+                  <span className="text-base md:text-lg font-black text-black">
                     {value as string}
                   </span>
                 </div>
@@ -166,8 +166,8 @@ export default function ProductDetailPage() {
               </div>
             </div>
 
-            {/* CTA's */}
-            <div className="flex flex-col sm:flex-row gap-4 mb-12">
+            {/* Desktop CTA's (Hidden on Mobile) */}
+            <div className="hidden md:flex flex-row gap-4 mb-12">
               <button className="flex-1 h-16 bg-black text-white rounded-full font-black text-xl hover:scale-[1.02] transition-transform flex items-center justify-center gap-3 shadow-xl">
                 <ShoppingCart className="w-6 h-6" />
                 Tambah ke Keranjang
@@ -200,6 +200,32 @@ export default function ProductDetailPage() {
       </main>
 
       <Footer />
+
+      {/* Shopee-style Mobile Sticky Bottom Bar */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-xl border-t border-black/5 px-4 py-3 flex items-center gap-3 shadow-[0_-10px_20px_rgba(0,0,0,0.05)]">
+        {/* Secondary Actions (Icons) */}
+        <div className="flex items-center gap-1 border-r border-black/5 pr-3">
+          <button className="flex flex-col items-center justify-center w-12 h-12 text-gray-400 hover:text-black transition-colors">
+            <Share2 className="w-5 h-5" />
+            <span className="text-[9px] font-bold uppercase mt-0.5">Share</span>
+          </button>
+          <button className="flex flex-col items-center justify-center w-12 h-12 text-[#e75a40] hover:text-[#e75a40]/80 transition-colors">
+            <Heart className="w-5 h-5" />
+            <span className="text-[9px] font-bold uppercase mt-0.5">Suka</span>
+          </button>
+        </div>
+
+        {/* Primary Actions (Buttons) */}
+        <div className="flex-1 flex gap-2">
+          <button className="flex-1 h-12 bg-white border-2 border-black text-black rounded-lg font-black text-xs uppercase tracking-tight flex items-center justify-center gap-1 active:scale-95 transition-transform">
+            <ShoppingCart className="w-4 h-4" />
+            Keranjang
+          </button>
+          <button className="flex-1 h-12 bg-[#e75a40] text-white rounded-lg font-black text-xs uppercase tracking-tight flex items-center justify-center active:scale-95 transition-transform shadow-lg shadow-[#e75a40]/20">
+            Beli Sekarang
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

@@ -43,7 +43,12 @@ const COL = {
   chili: 0xff1100,
 };
 
-function makeRamenBlock(ox: number, oy: number, oz: number) {
+function makeRamenBlock(
+  ox: number,
+  oy: number,
+  oz: number,
+  colors: typeof COL,
+) {
   const G = new THREE.Group();
 
   const shape: [number, number, number][] = [];
@@ -60,14 +65,14 @@ function makeRamenBlock(ox: number, oy: number, oz: number) {
     if (y === 2) {
       c =
         (x + z) % 3 === 0
-          ? COL.noodleHi
+          ? colors.noodleHi
           : (x + z) % 3 === 1
-            ? COL.noodleTop
-            : COL.noodleMid;
+            ? colors.noodleTop
+            : colors.noodleMid;
     } else if (y === 1) {
-      c = (x * z) % 2 === 0 ? COL.noodleMid : COL.noodleBase;
+      c = (x * z) % 2 === 0 ? colors.noodleMid : colors.noodleBase;
     } else {
-      c = COL.noodleBase;
+      c = colors.noodleBase;
     }
     G.add(createVox(x, y, z, c, 0.72));
   });
@@ -81,7 +86,7 @@ function makeRamenBlock(ox: number, oy: number, oz: number) {
         (x === 5 && z === 3)
       )
         continue;
-      const c = (x + z) % 2 === 0 ? COL.noodleHi : COL.sauce;
+      const c = (x + z) % 2 === 0 ? colors.noodleHi : colors.sauce;
       const slab = new THREE.Mesh(
         new THREE.BoxGeometry(0.95, 0.25, 0.95),
         new THREE.MeshStandardMaterial({
@@ -105,7 +110,7 @@ function makeRamenBlock(ox: number, oy: number, oz: number) {
   ];
   cheesePatch.forEach(([cx, cz]) => {
     const ht = 0.3 + Math.random() * 0.15;
-    const c = (cx + cz) % 2 === 0 ? COL.cheeseWhite : COL.cheeseYellow;
+    const c = (cx + cz) % 2 === 0 ? colors.cheeseWhite : colors.cheeseYellow;
     const ch = new THREE.Mesh(
       new THREE.BoxGeometry(1.0, ht, 1.0),
       new THREE.MeshStandardMaterial({
@@ -127,29 +132,50 @@ function makeRamenBlock(ox: number, oy: number, oz: number) {
     [5, 2],
   ].forEach(([sx, sz]) => {
     G.add(
-      createVox(sx + 0.2, 3.45, sz + 0.2, COL.sesame, 0.6, 0, 0.35, 0.35, 0.35),
+      createVox(
+        sx + 0.2,
+        3.45,
+        sz + 0.2,
+        colors.sesame,
+        0.6,
+        0,
+        0.35,
+        0.35,
+        0.35,
+      ),
     );
   });
 
   const noriM = new THREE.Mesh(
     new THREE.BoxGeometry(1.5, 0.2, 0.6),
-    new THREE.MeshStandardMaterial({ color: COL.nori, roughness: 0.9 }),
+    new THREE.MeshStandardMaterial({ color: colors.nori, roughness: 0.9 }),
   );
   noriM.position.set(2, 3.55, 2);
   G.add(noriM);
 
-  G.add(createVox(2.3, 3.65, 1.8, COL.chili, 0.6, 0, 0.3, 0.3, 0.3));
-  G.add(createVox(1.5, 3.62, 2.4, COL.chili, 0.6, 0, 0.25, 0.25, 0.25));
+  G.add(createVox(2.3, 3.65, 1.8, colors.chili, 0.6, 0, 0.3, 0.3, 0.3));
+  G.add(createVox(1.5, 3.62, 2.4, colors.chili, 0.6, 0, 0.25, 0.25, 0.25));
 
   G.position.set(ox, oy, oz);
   return G;
 }
 
-export default function SamyangModel() {
+export default function SamyangModel({
+  variant = "original",
+}: {
+  variant?: "original" | "spicy";
+}) {
   const groupRef = useRef<THREE.Group>(null);
 
   const sceneGroup = useMemo(() => {
     const ROOT = new THREE.Group();
+
+    // Adjust colors based on variant
+    const currentCols = { ...COL };
+    if (variant === "spicy") {
+      currentCols.sauce = 0xff0000; // Brighter red
+      currentCols.noodleTop = 0xff4400;
+    }
 
     // RACK
     const RACK = new THREE.Group();
@@ -201,7 +227,7 @@ export default function SamyangModel() {
       [8, 3],
     ];
     layout.forEach(([bx, bz]) => {
-      const block = makeRamenBlock(bx, 1.0, bz);
+      const block = makeRamenBlock(bx, 1.0, bz, currentCols);
       block.rotation.y = (Math.random() - 0.5) * 0.15;
       ROOT.add(block);
     });

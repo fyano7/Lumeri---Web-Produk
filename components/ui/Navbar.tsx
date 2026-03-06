@@ -4,12 +4,12 @@ import { useState, useEffect } from "react";
 import {
   ShoppingBag,
   ChevronDown,
-  User,
   X,
   ArrowRight,
   Sparkles,
   Target,
   Users,
+  Menu,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -53,6 +53,7 @@ export default function Navbar() {
   const [isShopOpen, setIsShopOpen] = useState(false);
   const [isBannerVisible, setIsBannerVisible] = useState(true);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [hoveredProduct, setHoveredProduct] = useState(SHOP_ITEMS[0]);
 
   // Handle transparent to solid background on scroll
@@ -116,7 +117,7 @@ export default function Navbar() {
             className="flex items-center gap-2 cursor-pointer z-50"
           >
             <Image
-              src="/logo/logo_lumeria.png"
+              src="/logo/logo_lumeria.webp"
               alt="Lumeriá Logo"
               width={140}
               height={45}
@@ -292,17 +293,84 @@ export default function Navbar() {
             <button className="w-10 h-10 rounded-full bg-white hover:bg-gray-50 shadow-sm border border-black/5 flex items-center justify-center transition-all hover:scale-110 active:scale-95">
               <span className="font-bold text-sm">ID</span>
             </button>
-            <button className="w-10 h-10 rounded-full bg-white hover:bg-gray-50 shadow-sm border border-black/5 flex items-center justify-center transition-all hover:scale-110 active:scale-95">
-              <User className="w-5 h-5" />
-            </button>
             <Link
               href="/products"
               className="w-10 h-10 rounded-full bg-[#e75a40] text-white shadow-xl flex items-center justify-center transition-all hover:scale-110 active:scale-95 hover:bg-[#d4482e]"
             >
               <ShoppingBag className="w-5 h-5 transition-transform group-hover:rotate-12" />
             </Link>
+
+            {/* Mobile Menu Toggle */}
+            <button
+              onClick={() => setIsMobileMenuOpen(true)}
+              className="lg:hidden w-10 h-10 rounded-full bg-white hover:bg-gray-50 shadow-sm border border-black/5 flex items-center justify-center transition-all hover:scale-110 active:scale-95"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
           </div>
         </nav>
+      </div>
+
+      {/* Mobile Menu Overlay */}
+      <div
+        className={`fixed inset-0 bg-white z-[100] transition-all duration-500 ease-in-out lg:hidden ${
+          isMobileMenuOpen
+            ? "translate-x-0 opacity-100"
+            : "translate-x-full opacity-0 pointer-events-none"
+        }`}
+      >
+        <div className="flex flex-col h-full p-6">
+          <div className="flex items-center justify-between mb-12">
+            <Image
+              src="/logo/logo_lumeria.webp"
+              alt="Lumeriá Logo"
+              width={120}
+              height={40}
+              className="object-contain"
+            />
+            <button
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center"
+            >
+              <X className="w-6 h-6" />
+            </button>
+          </div>
+
+          <div className="flex flex-col gap-6">
+            <Link
+              href="/"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="text-4xl font-black uppercase tracking-tighter"
+            >
+              Home
+            </Link>
+            <Link
+              href="/products"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="text-4xl font-black uppercase tracking-tighter"
+            >
+              Shop
+            </Link>
+            <Link
+              href="/about"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="text-4xl font-black uppercase tracking-tighter"
+            >
+              About Us
+            </Link>
+          </div>
+
+          <div className="mt-auto pb-12">
+            <Link
+              href="/products"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="flex items-center justify-center gap-3 w-full py-5 rounded-full bg-[#1b2b5b] text-white font-black text-xl shadow-2xl"
+            >
+              <ShoppingBag className="w-6 h-6" />
+              BELI SEKARANG
+            </Link>
+          </div>
+        </div>
       </div>
     </div>
   );

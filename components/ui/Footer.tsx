@@ -26,7 +26,7 @@ export default function Footer() {
           <div className="max-w-sm">
             <div className="flex items-center gap-2 mb-6">
               <Image
-                src="/logo/logo_lumeria.png"
+                src="/logo/logo_lumeria.webp"
                 alt="Lumeriá Logo"
                 width={160}
                 height={55}

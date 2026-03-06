@@ -100,4 +100,30 @@ export const PRODUCTS = [
       protein: "8g",
     },
   },
+  {
+    id: "samyang-spicy",
+    name: "Samyang Spicy",
+    desc: "Level up sensasi pedasmu dengan Samyang Roll ekstra pedas yang membakar lidah.",
+    longDesc:
+      "Varian bagi para 'spicy hunter'. Samyang Spicy Roll menghadirkan mi Samyang dengan level pedas yang lebih tinggi, dipadukan dengan irisan cabai rawit dan saus gochujang spesial. Dibungkus rice paper krispi untuk tekstur yang sempurna.",
+    ingredients: [
+      "Mie Samyang Extra Hot",
+      "Rice Paper",
+      "Cabai Rawit",
+      "Saus Gochujang",
+      "Keju Mozzarella",
+    ],
+    benefits:
+      "Sempurna untuk melepas penat dan memberikan tantangan rasa yang tak terlupakan bagi pecinta pedas sejati.",
+    img: "/produk/samyngrol.webp",
+    bg: "#dc2626",
+    price: "Rp 12.000",
+    category: "Samyang Roll",
+    nutrition: {
+      calories: "340 kcal",
+      carbs: "45g",
+      fat: "15g",
+      protein: "9g",
+    },
+  },
 ];

@@ -16,6 +16,11 @@ export const metadata: Metadata = {
   title: "Lumeriá",
   description:
     "Piscok lumer di luar, renyah di dalam. Rasakan sensasi Lumeriá hari ini.",
+  icons: {
+    icon: "/logo/logo_lumeria.webp",
+    shortcut: "/logo/logo_lumeria.webp",
+    apple: "/logo/logo_lumeria.webp",
+  },
 };
 
 export default function RootLayout({
