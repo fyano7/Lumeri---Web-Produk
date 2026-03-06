@@ -9,11 +9,11 @@ import Footer from "@/components/ui/Footer";
 import { PRODUCTS } from "@/constants/products";
 import {
   ArrowLeft,
-  ShoppingCart,
   Star,
   Heart,
   Share2,
   Info,
+  MessageCircle,
 } from "lucide-react";
 
 export default function ProductDetailPage() {
@@ -168,10 +168,13 @@ export default function ProductDetailPage() {
 
             {/* Desktop CTA's (Hidden on Mobile) */}
             <div className="hidden md:flex flex-row gap-4 mb-12">
-              <button className="flex-1 h-16 bg-black text-white rounded-full font-black text-xl hover:scale-[1.02] transition-transform flex items-center justify-center gap-3 shadow-xl">
-                <ShoppingCart className="w-6 h-6" />
-                Tambah ke Keranjang
-              </button>
+              <Link
+                href={`/products/${id}/order`}
+                className="flex-1 h-16 bg-[#e75a40] text-white rounded-full font-black text-xl hover:scale-[1.02] transition-transform flex items-center justify-center gap-3 shadow-xl"
+              >
+                <MessageCircle className="w-6 h-6" />
+                Pesan Sekarang
+              </Link>
               <button className="w-16 h-16 border-2 border-gray-100 rounded-full flex items-center justify-center hover:bg-gray-50 transition-colors">
                 <Heart className="w-6 h-6 text-gray-400" />
               </button>
@@ -217,13 +220,13 @@ export default function ProductDetailPage() {
 
         {/* Primary Actions (Buttons) */}
         <div className="flex-1 flex gap-2">
-          <button className="flex-1 h-12 bg-white border-2 border-black text-black rounded-lg font-black text-xs uppercase tracking-tight flex items-center justify-center gap-1 active:scale-95 transition-transform">
-            <ShoppingCart className="w-4 h-4" />
-            Keranjang
-          </button>
-          <button className="flex-1 h-12 bg-[#e75a40] text-white rounded-lg font-black text-xs uppercase tracking-tight flex items-center justify-center active:scale-95 transition-transform shadow-lg shadow-[#e75a40]/20">
-            Beli Sekarang
-          </button>
+          <Link
+            href={`/products/${id}/order`}
+            className="flex-1 h-12 bg-[#e75a40] text-white rounded-lg font-black text-xs uppercase tracking-tight flex items-center justify-center active:scale-95 transition-transform shadow-lg shadow-[#e75a40]/20 gap-2"
+          >
+            <MessageCircle className="w-4 h-4" />
+            Pesan Sekarang
+          </Link>
         </div>
       </div>
     </div>

@@ -6,7 +6,7 @@ import Link from "next/link";
 import Navbar from "@/components/ui/Navbar";
 import Footer from "@/components/ui/Footer";
 import { PRODUCTS } from "@/constants/products";
-import { ArrowLeft, ArrowRight, ShoppingBag } from "lucide-react";
+import { ArrowLeft, ArrowRight, MessageCircle } from "lucide-react";
 
 export default function ProductsPage() {
   return (
@@ -99,10 +99,15 @@ export default function ProductsPage() {
               langsung di tanganmu.
             </p>
           </div>
-          <button className="relative z-10 bg-white text-[#1b2b5b] px-8 md:px-10 py-4 md:py-5 rounded-full font-black text-lg md:text-xl hover:scale-105 transition-transform flex items-center gap-3">
-            <ShoppingBag className="w-5 h-5 md:w-6 md:h-6" />
-            Beli Sekarang
-          </button>
+          <a
+            href="https://wa.me/628123456789?text=Halo%20Lumeri%C3%A1,%20saya%20ingin%20memesan%20produknya!"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="relative z-10 bg-white text-[#1b2b5b] px-8 md:px-10 py-4 md:py-5 rounded-full font-black text-lg md:text-xl hover:scale-105 transition-transform flex items-center gap-3"
+          >
+            <MessageCircle className="w-5 h-5 md:w-6 md:h-6" />
+            Pesan Sekarang
+          </a>
         </div>
       </main>
 

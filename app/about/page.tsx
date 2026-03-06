@@ -245,7 +245,7 @@ export default function AboutPage() {
               <span className="text-[#e75a40]">Inovasi Kami</span>
             </h2>
             <p className="text-gray-500 font-medium text-lg leading-relaxed">
-              Kami tidak pernah berhenti bereksperimen. Setiap produk Lumeria
+              Kami tidak pernah berhenti bereksperimen. Setiap produk Lumeriá
               diriset dengan teliti untuk menemukan perpaduan rasa yang paling
               pas, sehingga setiap gigitan memberikan kesan yang mendalam untuk
               Anda.

@@ -369,13 +369,13 @@ export default function Home() {
                   <>
                     PISCOK LUMER
                     <br />
-                    LUMERIA
+                    LUMERIÁ
                   </>
                 ) : (
                   <>
                     SAMYANG ROLL
                     <br />
-                    LUMERIA
+                    LUMERIÁ
                   </>
                 )}
               </h2>
@@ -666,7 +666,7 @@ export default function Home() {
             >
               <Image
                 src="/member/member_lumeria.webp"
-                alt="Lumeria Makers and Members"
+                alt="Lumeriá Makers and Members"
                 fill
                 className="object-contain drop-shadow-2xl transition-transform duration-500 group-hover:scale-[1.02]"
               />

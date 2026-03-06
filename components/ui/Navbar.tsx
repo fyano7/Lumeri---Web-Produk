@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import {
-  ShoppingBag,
   ChevronDown,
   X,
   ArrowRight,
@@ -10,6 +9,7 @@ import {
   Target,
   Users,
   Menu,
+  MessageCircle,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -223,8 +223,7 @@ export default function Navbar() {
               className="group relative flex items-center gap-2 px-8 py-3 rounded-full bg-gradient-to-r from-[#e75a40] to-[#ff8a75] text-white font-extrabold shadow-[0_10px_20px_-5px_rgba(231,90,64,0.4)] hover:shadow-[0_15px_25px_-5px_rgba(231,90,64,0.5)] transition-all duration-300 hover:scale-105 active:scale-95 overflow-hidden border border-white/20"
             >
               <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 skew-x-12" />
-              <ShoppingBag className="w-4 h-4 transition-transform group-hover:rotate-12" />
-              <span>Beli sekarang</span>
+              <span>Lihat Menu</span>
             </Link>
             {/* About Us Menu */}
             <div
@@ -293,12 +292,14 @@ export default function Navbar() {
             <button className="w-10 h-10 rounded-full bg-white hover:bg-gray-50 shadow-sm border border-black/5 flex items-center justify-center transition-all hover:scale-110 active:scale-95">
               <span className="font-bold text-sm">ID</span>
             </button>
-            <Link
-              href="/products"
+            <a
+              href="https://wa.me/628123456789"
+              target="_blank"
+              rel="noopener noreferrer"
               className="w-10 h-10 rounded-full bg-[#e75a40] text-white shadow-xl flex items-center justify-center transition-all hover:scale-110 active:scale-95 hover:bg-[#d4482e]"
             >
-              <ShoppingBag className="w-5 h-5 transition-transform group-hover:rotate-12" />
-            </Link>
+              <MessageCircle className="w-5 h-5" />
+            </a>
 
             {/* Mobile Menu Toggle */}
             <button
@@ -361,14 +362,15 @@ export default function Navbar() {
           </div>
 
           <div className="mt-auto pb-12">
-            <Link
-              href="/products"
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="flex items-center justify-center gap-3 w-full py-5 rounded-full bg-[#1b2b5b] text-white font-black text-xl shadow-2xl"
+            <a
+              href="https://wa.me/628123456789"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-3 w-full py-5 rounded-full bg-[#e75a40] text-white font-black text-xl shadow-2xl"
             >
-              <ShoppingBag className="w-6 h-6" />
-              BELI SEKARANG
-            </Link>
+              <MessageCircle className="w-6 h-6" />
+              PESAN SEKARANG
+            </a>
           </div>
         </div>
       </div>

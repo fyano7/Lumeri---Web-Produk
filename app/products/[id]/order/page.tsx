@@ -1,0 +1,711 @@
+"use client";
+
+import React, { useState, useEffect } from "react";
+import { useParams, useRouter } from "next/navigation";
+import Image from "next/image";
+import Link from "next/link";
+import { useRef } from "react";
+import { toBlob } from "html-to-image";
+import {
+  ArrowLeft,
+  CheckCircle2,
+  User,
+  School,
+  Phone,
+  CreditCard,
+  MapPin,
+  ChevronRight,
+  Printer,
+  Download,
+  Calendar,
+  Clock,
+  Navigation,
+  Info,
+  Copy,
+  Check,
+} from "lucide-react";
+import Navbar from "@/components/ui/Navbar";
+import Footer from "@/components/ui/Footer";
+import { PRODUCTS } from "@/constants/products";
+
+const DAYS = [
+  { id: "Senin", label: "Senin" },
+  { id: "Selasa", label: "Selasa" },
+  { id: "Rabu", label: "Rabu" },
+  { id: "Kamis", label: "Kamis" },
+  { id: "Jumat", label: "Jumat" },
+  { id: "Sabtu", label: "Sabtu" },
+  { id: "Minggu", label: "Minggu", disabled: true },
+];
+
+const TIME_SLOTS = [
+  "Istirahat 1",
+  "Istirahat 2",
+  "Pulang Sekolah",
+  "Area TB (WhatsApp)",
+];
+
+const TIKUM_OPTIONS = ["Kelas", "Kantin", "Area TB (WhatsApp)"];
+
+export default function OrderPage() {
+  const { id } = useParams();
+  const router = useRouter();
+  const product = PRODUCTS.find((p) => p.id === id);
+
+  const [step, setStep] = useState<"form" | "receipt">("form");
+  const [formData, setFormData] = useState({
+    name: "",
+    class: "",
+    phone: "",
+    payment: "Cash",
+    tikum: "Kelas",
+    day: "Senin",
+    time: "Istirahat 1",
+  });
+
+  const [orderId, setOrderId] = useState("");
+  const [isCopied, setIsCopied] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const receiptRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const date = new Date();
+    const random = Math.floor(1000 + Math.random() * 9000);
+    setOrderId(`LMR-${date.getDate()}${date.getMonth() + 1}-${random}`);
+
+    // Auto-select today if it's not Sunday
+    const dayNames = [
+      "Minggu",
+      "Senin",
+      "Selasa",
+      "Rabu",
+      "Kamis",
+      "Jumat",
+      "Sabtu",
+    ];
+    const todayName = dayNames[date.getDay()];
+    if (todayName !== "Minggu") {
+      setFormData((prev) => ({ ...prev, day: todayName }));
+    }
+  }, []);
+
+  if (!product) {
+    return (
+      <div className="min-h-screen bg-[#fdf8f5] flex flex-col items-center justify-center p-6 text-center">
+        <h1 className="text-4xl font-black mb-4">Produk Tidak Ditemukan</h1>
+        <Link href="/products" className="text-[#e75a40] font-bold underline">
+          Kembali ke Daftar Produk
+        </Link>
+      </div>
+    );
+  }
+
+  const sendToTelegram = async (id: string, data: typeof formData) => {
+    const BOT_TOKEN = "8776066334:AAFL_uTVOk5pctW70fMpoDlrBS2dzbaj3Cw";
+    const CHAT_ID = "5310430098";
+
+    // Capture the visual receipt
+    let imageBlob: Blob | null = null;
+    if (receiptRef.current) {
+      try {
+        imageBlob = await toBlob(receiptRef.current, {
+          backgroundColor: "#fef3f2",
+          quality: 0.95,
+        });
+      } catch (err) {
+        console.error("Failed to capture receipt image:", err);
+      }
+    }
+
+    const formattedWA = data.phone.startsWith("0")
+      ? "62" + data.phone.slice(1)
+      : data.phone;
+    const text = `LUMERIÁ - NOTIFIKASI PESANAN BARU
+------------------------------------
+ORDER ID: ${id}
+------------------------------------
+
+DATA PELANGGAN
+- Nama: ${data.name}
+- Kelas: ${data.class}
+- WhatsApp: [Chat via WhatsApp](https://wa.me/${formattedWA}?text=Halo%20${encodeURIComponent(data.name)}%2C%20saya%20dari%20Lumeriá.%20Pesanan%20Anda%20dengan%20ID%20${id}%20sedang%20kami%20proses.) (${data.phone})
+
+JADWAL PENGAMBILAN
+- Hari: ${data.day}
+- Waktu: ${data.time}
+- Tempat: ${data.tikum}
+
+DETAIL PRODUK
+- Item: ${product.name}
+- Harga: ${product.price}
+- Metode Bayar: ${data.payment}
+
+------------------------------------
+Silakan segera konfirmasi pesanan ini.
+------------------------------------`;
+
+    try {
+      // 1. Send the visual receipt image if captured
+      if (imageBlob) {
+        const formData = new FormData();
+        formData.append("chat_id", CHAT_ID);
+        formData.append("photo", imageBlob, "receipt.png");
+
+        await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
+          method: "POST",
+          body: formData,
+        });
+      }
+
+      // 2. Send the professional text details
+      await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chat_id: CHAT_ID,
+          text: text,
+          parse_mode: "Markdown",
+        }),
+      });
+    } catch (error) {
+      console.error("Telegram notification failed:", error);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    // Switch to receipt first so it renders and can be captured
+    setStep("receipt");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  // Trigger telegram sending after receipt renders
+  useEffect(() => {
+    if (step === "receipt" && orderId && isSubmitting) {
+      // Small delay to ensure styles are fully applied before capture
+      const timer = setTimeout(() => {
+        sendToTelegram(orderId, formData).finally(() => {
+          setIsSubmitting(false);
+        });
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [step, orderId, isSubmitting]);
+
+  const handleCopyId = () => {
+    navigator.clipboard.writeText(orderId);
+    setIsCopied(true);
+    setTimeout(() => setIsCopied(false), 2000);
+  };
+
+  return (
+    <div className="min-h-screen bg-[#fdf8f5] font-sans selection:bg-black selection:text-white overflow-hidden">
+      <Navbar />
+
+      <main className="pt-40 md:pt-48 pb-32 px-4 md:px-6 max-w-2xl mx-auto relative z-10">
+        {step === "form" ? (
+          <div className="animate-in fade-in slide-in-from-bottom-8 duration-700">
+            <Link
+              href={`/products/${id}`}
+              className="inline-flex items-center gap-2 text-[#e75a40] text-sm font-black uppercase tracking-widest mb-8 hover:translate-x-[-4px] transition-transform"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Kembali
+            </Link>
+
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10">
+              <h1 className="text-4xl font-black uppercase tracking-tighter text-black leading-none">
+                Konfirmasi <br />{" "}
+                <span className="text-[#e75a40]">Pesananmu</span>
+              </h1>
+              <div className="bg-white/50 backdrop-blur-sm px-4 py-2 rounded-2xl border border-black/5 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-white p-1 shadow-sm border border-black/5">
+                  <Image
+                    src={product.img}
+                    alt={product.name}
+                    width={40}
+                    height={40}
+                    className="object-contain"
+                  />
+                </div>
+                <div>
+                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                    Item Terpilih
+                  </p>
+                  <p className="text-sm font-black text-black">
+                    {product.name}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Pesanan Section */}
+              <div className="bg-white rounded-[2rem] p-6 md:p-8 shadow-sm border border-black/5">
+                <div className="flex items-center justify-between mb-8 pb-4 border-b border-gray-100">
+                  <div className="flex items-center gap-3">
+                    <User className="w-5 h-5 text-[#e75a40]" />
+                    <h2 className="font-black text-black uppercase tracking-wider text-xs">
+                      Identitas Pengambil
+                    </h2>
+                  </div>
+                  <span className="text-[10px] font-black text-gray-300 uppercase">
+                    Wajib Diisi
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 ml-4">
+                      Nama Lengkap
+                    </label>
+                    <input
+                      required
+                      placeholder="Nama Anda"
+                      type="text"
+                      className="w-full h-14 bg-gray-50 border-2 border-transparent focus:border-[#e75a40] focus:bg-white rounded-2xl px-6 font-bold text-black outline-none transition-all placeholder:text-gray-300"
+                      value={formData.name}
+                      onChange={(e) =>
+                        setFormData({ ...formData, name: e.target.value })
+                      }
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 ml-4">
+                      Kelas / Unit
+                    </label>
+                    <input
+                      required
+                      placeholder="Contoh: XI RPL 1"
+                      type="text"
+                      className="w-full h-14 bg-gray-50 border-2 border-transparent focus:border-[#e75a40] focus:bg-white rounded-2xl px-6 font-bold text-black outline-none transition-all placeholder:text-gray-300"
+                      value={formData.class}
+                      onChange={(e) =>
+                        setFormData({ ...formData, class: e.target.value })
+                      }
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 ml-4">
+                      No. WhatsApp Aktif
+                    </label>
+                    <input
+                      required
+                      placeholder="08xxxxxxxxxx"
+                      type="tel"
+                      className="w-full h-14 bg-gray-50 border-2 border-transparent focus:border-[#e75a40] focus:bg-white rounded-2xl px-6 font-bold text-black outline-none transition-all placeholder:text-gray-300"
+                      value={formData.phone}
+                      onChange={(e) =>
+                        setFormData({ ...formData, phone: e.target.value })
+                      }
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Schedule Section */}
+              <div className="bg-white rounded-[2rem] p-6 md:p-8 shadow-sm border border-black/5">
+                <div className="flex items-center justify-between mb-8 pb-4 border-b border-gray-100">
+                  <div className="flex items-center gap-3">
+                    <Calendar className="w-5 h-5 text-[#e75a40]" />
+                    <h2 className="font-black text-black uppercase tracking-wider text-xs">
+                      Jadwal Pengambilan
+                    </h2>
+                  </div>
+                  <Info className="w-4 h-4 text-gray-300" />
+                </div>
+
+                <div className="mb-8">
+                  <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4 ml-4">
+                    Pilih Hari
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {DAYS.map((day) => (
+                      <button
+                        key={day.id}
+                        type="button"
+                        disabled={day.disabled}
+                        onClick={() =>
+                          setFormData({ ...formData, day: day.id })
+                        }
+                        className={`px-4 py-3 rounded-xl font-bold text-xs transition-all border-2 ${
+                          day.disabled
+                            ? "bg-red-50 text-red-500 border-red-100 cursor-not-allowed grayscale"
+                            : formData.day === day.id
+                              ? "bg-black text-white border-black shadow-lg"
+                              : "bg-gray-50 text-gray-400 border-transparent hover:border-gray-200"
+                        }`}
+                      >
+                        {day.label}
+                        {day.disabled && (
+                          <span className="block text-[8px] font-black uppercase opacity-50">
+                            Libur
+                          </span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4 ml-4">
+                    Pilih Sesi
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {TIME_SLOTS.map((time) => (
+                      <button
+                        key={time}
+                        type="button"
+                        onClick={() => setFormData({ ...formData, time: time })}
+                        className={`px-3 py-4 rounded-xl font-bold text-[10px] text-center transition-all border-2 ${
+                          formData.time === time
+                            ? "bg-[#e75a40] text-white border-[#e75a40] shadow-md"
+                            : "bg-gray-50 text-gray-400 border-transparent hover:border-gray-200"
+                        }`}
+                      >
+                        {time}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Delivery Section */}
+              <div className="bg-white rounded-[2rem] p-6 md:p-8 shadow-sm border border-black/5">
+                <div className="flex items-center gap-3 mb-8 pb-4 border-b border-gray-100">
+                  <Navigation className="w-5 h-5 text-[#e75a40]" />
+                  <h2 className="font-black text-black uppercase tracking-wider text-xs">
+                    Lokasi Penyerahan
+                  </h2>
+                </div>
+
+                <div className="mb-8">
+                  <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4 ml-4">
+                    Titik Kumpul (Tikum)
+                  </label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {TIKUM_OPTIONS.map((opt) => (
+                      <button
+                        key={opt}
+                        type="button"
+                        onClick={() => setFormData({ ...formData, tikum: opt })}
+                        className={`px-2 py-4 rounded-xl font-bold text-[10px] text-center transition-all border-2 ${
+                          formData.tikum === opt
+                            ? "bg-black text-white border-black shadow-md"
+                            : "bg-gray-50 text-gray-400 border-transparent hover:border-gray-200"
+                        }`}
+                      >
+                        {opt}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4 ml-4">
+                    Metode Pembayaran
+                  </label>
+                  <div className="grid grid-cols-2 gap-4">
+                    {["Cash", "Transfer"].map((method) => (
+                      <button
+                        key={method}
+                        type="button"
+                        onClick={() =>
+                          setFormData({ ...formData, payment: method })
+                        }
+                        className={`h-14 rounded-2xl font-bold flex items-center justify-center gap-3 transition-all border-2 ${
+                          formData.payment === method
+                            ? "bg-[#e75a40] text-white border-[#e75a40] shadow-lg shadow-[#e75a40]/30"
+                            : "bg-gray-50 text-gray-400 border-transparent hover:border-gray-200"
+                        }`}
+                      >
+                        <CreditCard className="w-4 h-4" />
+                        {method}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className={`w-full h-20 bg-black text-white rounded-3xl font-black text-xl uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-2xl flex items-center justify-center gap-4 mt-12 group ${isSubmitting ? "opacity-70 cursor-not-allowed" : ""}`}
+              >
+                {isSubmitting ? (
+                  <>
+                    <div className="w-6 h-6 border-4 border-white/20 border-t-white rounded-full animate-spin"></div>
+                    Memproses...
+                  </>
+                ) : (
+                  <>
+                    Pesan Sekarang
+                    <ChevronRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
+                  </>
+                )}
+              </button>
+            </form>
+          </div>
+        ) : (
+          <div className="animate-in zoom-in-95 fade-in duration-700">
+            {/* Success Heading */}
+            <div className="text-center mb-10">
+              <div className="w-20 h-20 bg-green-50 text-green-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
+                <CheckCircle2 className="w-10 h-10" />
+              </div>
+              <h1 className="text-3xl md:text-5xl font-black text-black mb-3 uppercase tracking-tighter">
+                Nota <span className="text-[#e75a40]">Digital</span>
+              </h1>
+              <p className="text-gray-400 font-bold max-w-xs mx-auto text-sm leading-relaxed">
+                Pesanan sedang diproses. <br />
+                Simpan atau tunjukkan nota ini ke admin saat mengambil
+                pesananmu.
+              </p>
+            </div>
+
+            {/* HIGH FIDELITY RECEIPT CARD */}
+            <div
+              ref={receiptRef}
+              className="bg-white rounded-[2.5rem] shadow-[0_40px_80px_-20px_rgba(0,0,0,0.15)] overflow-hidden border border-black/5 mb-10 relative"
+            >
+              {/* Receipt Top Header */}
+              <div className="h-6 bg-[#e75a40] block relative">
+                <div className="absolute inset-0 bg-gradient-to-r from-black/10 to-transparent"></div>
+              </div>
+
+              <div className="p-8 md:p-12">
+                {/* Branding Section */}
+                <div className="flex flex-col items-center text-center mb-10 border-b border-dashed border-gray-200 pb-10">
+                  <div className="w-20 h-20 bg-white rounded-[2rem] flex items-center justify-center p-4 mb-4 shadow-sm border border-black/5">
+                    <Image
+                      src="/logo/logo_lumeria.webp"
+                      alt="Lumeriá"
+                      width={60}
+                      height={60}
+                      className="object-contain"
+                    />
+                  </div>
+                  <h2 className="text-2xl font-black text-black tracking-tight mb-1">
+                    LUMERIÁ OFFICIAL
+                  </h2>
+                  <p className="text-[9px] text-[#e75a40] font-black uppercase tracking-[0.5em] mb-4">
+                    Bakery & Snacks Co.
+                  </p>
+
+                  <div className="bg-gray-50 px-5 py-2 rounded-full border border-gray-100 flex items-center gap-4">
+                    <div className="text-left">
+                      <p className="text-[8px] text-gray-400 font-black uppercase tracking-widest leading-none mb-1">
+                        ORDER ID
+                      </p>
+                      <p className="text-sm font-black text-black uppercase tracking-wider">
+                        {orderId}
+                      </p>
+                    </div>
+                    <button
+                      onClick={handleCopyId}
+                      className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-400 hover:text-black"
+                    >
+                      {isCopied ? (
+                        <Check className="w-4 h-4 text-green-500" />
+                      ) : (
+                        <Copy className="w-4 h-4" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Customer Data Grid */}
+                <div className="grid grid-cols-2 gap-y-8 mb-12">
+                  <div className="space-y-1">
+                    <p className="text-[9px] text-gray-400 font-black uppercase tracking-widest flex items-center gap-1.5">
+                      <User className="w-3 h-3 text-[#e75a40]" /> Pemesan
+                    </p>
+                    <p className="text-sm font-black text-black uppercase leading-tight">
+                      {formData.name}
+                    </p>
+                    <p className="text-[10px] text-gray-500 font-bold">
+                      {formData.class}
+                    </p>
+                  </div>
+                  <div className="space-y-1 text-right">
+                    <p className="text-[9px] text-gray-400 font-black uppercase tracking-widest flex items-center gap-1.5 justify-end">
+                      <CreditCard className="w-3 h-3 text-[#e75a40]" />{" "}
+                      Pembayaran
+                    </p>
+                    <p className="text-sm font-black text-black uppercase">
+                      {formData.payment}
+                    </p>
+                    <p className="text-[10px] bg-green-50 text-green-600 font-black px-2 py-0.5 rounded-md inline-block">
+                      UNPAID
+                    </p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[9px] text-gray-400 font-black uppercase tracking-widest flex items-center gap-1.5">
+                      <Calendar className="w-3 h-3 text-[#e75a40]" /> Jadwal
+                      Ambil
+                    </p>
+                    <p className="text-sm font-black text-black uppercase">
+                      {formData.day}
+                    </p>
+                    <p className="text-[10px] text-gray-500 font-black uppercase">
+                      {formData.time}
+                    </p>
+                  </div>
+                  <div className="space-y-1 text-right">
+                    <p className="text-[9px] text-gray-400 font-black uppercase tracking-widest flex items-center gap-1.5 justify-end">
+                      <MapPin className="w-3 h-3 text-[#e75a40]" /> Titik Kumpul
+                    </p>
+                    <p className="text-sm font-black text-black uppercase leading-tight">
+                      {formData.tikum}
+                    </p>
+                    <p className="text-[10px] text-gray-500 font-bold">
+                      Lantai 1
+                    </p>
+                  </div>
+                </div>
+
+                {/* ITEM BREAKDOWN (Shopee Style) */}
+                <div className="space-y-4 mb-10">
+                  <div className="flex items-center gap-4 p-4 border border-gray-100 rounded-3xl bg-gray-50/50">
+                    <div className="w-14 h-14 rounded-2xl bg-white p-2 shadow-sm shrink-0 border border-black/5 flex items-center justify-center">
+                      <Image
+                        src={product.img}
+                        alt={product.name}
+                        width={48}
+                        height={48}
+                        className="object-contain"
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-0.5">
+                        Produk Pilihan
+                      </p>
+                      <h4 className="font-black text-black leading-tight uppercase text-sm">
+                        {product.name}
+                      </h4>
+                      <p className="text-[11px] font-bold text-[#e75a40]">
+                        Qty: 1 Unit
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-black text-black">
+                        {product.price}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Prices Table */}
+                  <div className="px-4 py-6 border-y border-dashed border-gray-200 space-y-3">
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="text-gray-400 font-bold">
+                        Subtotal Produk
+                      </span>
+                      <span className="text-black font-black">
+                        {product.price}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="text-gray-400 font-bold">
+                        Biaya Layanan
+                      </span>
+                      <span className="text-black font-black">Rp 0</span>
+                    </div>
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="text-gray-400 font-bold">
+                        Biaya Pengiriman
+                      </span>
+                      <span className="text-green-500 font-black uppercase text-[10px]">
+                        Gratis Ongkir
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* GRAND TOTAL */}
+                  <div className="flex justify-between items-center p-4 pt-6">
+                    <span className="text-sm font-black text-black uppercase tracking-widest">
+                      Total Bayar
+                    </span>
+                    <span className="text-2xl font-black text-[#e75a40]">
+                      {product.price}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Barcode & Footer */}
+                <div className="flex flex-col items-center pt-10 border-t border-dashed border-gray-200">
+                  <div className="w-full h-12 bg-[url('https://www.transparenttextures.com/patterns/barcode-1.png')] opacity-10 mb-6 grayscale group-hover:opacity-20 transition-opacity"></div>
+                  <div className="flex items-center gap-2 text-gray-300 mb-2">
+                    <CheckCircle2 className="w-4 h-4 text-green-500/50" />
+                    <p className="text-[10px] font-black tracking-[0.6em] uppercase text-gray-400">
+                      Authentic Order
+                    </p>
+                    <CheckCircle2 className="w-4 h-4 text-green-500/50" />
+                  </div>
+                  <p className="text-[9px] text-gray-300 font-medium">
+                    Digital Receipt generated on{" "}
+                    {new Date().toLocaleTimeString()}
+                  </p>
+                </div>
+              </div>
+
+              {/* ZIGZAG BOTTOM EDGE */}
+              <div className="flex w-full overflow-hidden leading-none h-4 relative -mt-0.5">
+                {Array.from({ length: 40 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="min-w-[1.5rem] h-6 bg-white rotate-45 -translate-y-3 shadow-md border border-black/5"
+                  ></div>
+                ))}
+              </div>
+            </div>
+
+            {/* ACTION BUTTONS (FINAL) */}
+            <div className="flex flex-col gap-4">
+              <div className="grid grid-cols-2 gap-4">
+                <button
+                  onClick={() => window.print()}
+                  className="flex-1 h-16 bg-white border-2 border-black/5 text-gray-700 rounded-3xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-gray-50 transition-colors shadow-sm"
+                >
+                  <Printer className="w-4 h-4" />
+                  Print Nota
+                </button>
+                <Link
+                  href="/products"
+                  className="flex-1 h-16 bg-black text-white rounded-3xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform shadow-sm"
+                >
+                  Pesan Lagi
+                </Link>
+              </div>
+              <a
+                href={`https://wa.me/6281219186721?text=Permisi%20min%20Lumeri%C3%A1%2C%20saya%20ingin%20mengonfirmasi%20pesanan%20saya%20dengan%20ID%20${orderId}.`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full h-16 bg-[#25D366] text-white rounded-3xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 hover:scale-[1.02] transition-all shadow-sm"
+              >
+                <Phone className="w-4 h-4" />
+                Hubungi Kami (Chat WhatsApp)
+              </a>
+            </div>
+
+            <button
+              onClick={() => setStep("form")}
+              className="w-full mt-10 text-gray-400 font-bold hover:text-black transition-colors flex items-center justify-center gap-2 py-4"
+            >
+              Ubah Data Pesanan
+            </button>
+          </div>
+        )}
+      </main>
+
+      {/* Decorative Background Elements */}
+      <div className="fixed top-0 left-0 w-full h-full pointer-events-none z-0 overflow-hidden">
+        <div className="absolute top-1/4 -right-20 w-80 h-80 bg-[#e75a40]/5 rounded-full blur-[100px]"></div>
+        <div className="absolute bottom-1/4 -left-20 w-80 h-80 bg-[#1b2b5b]/5 rounded-full blur-[100px]"></div>
+      </div>
+
+      <Footer />
+    </div>
+  );
+}
