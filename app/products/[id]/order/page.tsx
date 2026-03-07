@@ -23,10 +23,12 @@ import {
   Info,
   Copy,
   Check,
+  ShoppingBag,
 } from "lucide-react";
 import Navbar from "@/components/ui/Navbar";
 import Footer from "@/components/ui/Footer";
 import { PRODUCTS } from "@/constants/products";
+import { useCart } from "@/context/CartContext";
 
 const DAYS = [
   { id: "Senin", label: "Senin" },
@@ -50,7 +52,33 @@ const TIKUM_OPTIONS = ["Kelas", "Kantin", "Area TB (WhatsApp)"];
 export default function OrderPage() {
   const { id } = useParams();
   const router = useRouter();
-  const product = PRODUCTS.find((p) => p.id === id);
+  const { items, history, totalPrice, clearCart, addToHistory } = useCart();
+
+  // Determine checkout mode: single product or entire cart
+  const isDirectCheckout = id !== "all";
+  const directProduct = isDirectCheckout
+    ? PRODUCTS.find((p) => p.id === id)
+    : null;
+
+  // Items to be checked out
+  const checkoutItems =
+    isDirectCheckout && directProduct
+      ? [
+          {
+            id: directProduct.id,
+            name: directProduct.name,
+            price: directProduct.price,
+            priceNumber: parseInt(directProduct.price.replace(/[^0-9]/g, "")),
+            img: directProduct.img,
+            quantity: 1,
+          },
+        ]
+      : items;
+
+  const orderTotal =
+    isDirectCheckout && directProduct
+      ? parseInt(directProduct.price.replace(/[^0-9]/g, ""))
+      : totalPrice;
 
   const [step, setStep] = useState<"form" | "receipt">("form");
   const [formData, setFormData] = useState({
@@ -89,16 +117,22 @@ export default function OrderPage() {
     }
   }, []);
 
-  if (!product) {
-    return (
-      <div className="min-h-screen bg-[#fdf8f5] flex flex-col items-center justify-center p-6 text-center">
-        <h1 className="text-4xl font-black mb-4">Produk Tidak Ditemukan</h1>
-        <Link href="/products" className="text-[#e75a40] font-bold underline">
-          Kembali ke Daftar Produk
-        </Link>
-      </div>
-    );
-  }
+  // Redirect if no items to checkout
+  useEffect(() => {
+    if (!isSubmitting && step === "form" && checkoutItems.length === 0) {
+      router.push("/products");
+    }
+  }, [checkoutItems, router, step, isSubmitting]);
+
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      minimumFractionDigits: 0,
+    })
+      .format(price)
+      .replace("IDR", "Rp");
+  };
 
   const sendToTelegram = async (id: string, data: typeof formData) => {
     const BOT_TOKEN = "8776066334:AAFL_uTVOk5pctW70fMpoDlrBS2dzbaj3Cw";
@@ -120,6 +154,12 @@ export default function OrderPage() {
     const formattedWA = data.phone.startsWith("0")
       ? "62" + data.phone.slice(1)
       : data.phone;
+
+    // Format item list for message
+    const itemsList = checkoutItems
+      .map((item) => `- ${item.name} (${item.quantity}x) - ${item.price}`)
+      .join("\n");
+
     const text = `LUMERIÁ - NOTIFIKASI PESANAN BARU
 ------------------------------------
 ORDER ID: ${id}
@@ -135,10 +175,11 @@ JADWAL PENGAMBILAN
 - Waktu: ${data.time}
 - Tempat: ${data.tikum}
 
-DETAIL PRODUK
-- Item: ${product.name}
-- Harga: ${product.price}
-- Metode Bayar: ${data.payment}
+DETAIL PESANAN
+${itemsList}
+
+TOTAL BAYAR: ${formatPrice(orderTotal)}
+METODE BAYAR: ${data.payment}
 
 ------------------------------------
 Silakan segera konfirmasi pesanan ini.
@@ -176,9 +217,23 @@ Silakan segera konfirmasi pesanan ini.
     e.preventDefault();
     setIsSubmitting(true);
 
+    // Save to history
+    addToHistory({
+      name: formData.name,
+      phone: formData.phone,
+      address: `${formData.class} - ${formData.tikum} (${formData.day}, ${formData.time})`,
+      notes: `Metode: ${formData.payment}`,
+    });
+
     // Switch to receipt first so it renders and can be captured
     setStep("receipt");
     window.scrollTo({ top: 0, behavior: "smooth" });
+
+    // Clear cart if not direct checkout
+    if (!isDirectCheckout) {
+      // We don't clear immediately to ensure receipt renders correctly
+      // It's handled after submission finishes
+    }
   };
 
   // Trigger telegram sending after receipt renders
@@ -188,17 +243,24 @@ Silakan segera konfirmasi pesanan ini.
       const timer = setTimeout(() => {
         sendToTelegram(orderId, formData).finally(() => {
           setIsSubmitting(false);
+          if (!isDirectCheckout) {
+            clearCart();
+          }
         });
       }, 500);
       return () => clearTimeout(timer);
     }
-  }, [step, orderId, isSubmitting]);
+  }, [step, orderId, isSubmitting, isDirectCheckout, clearCart]);
 
   const handleCopyId = () => {
     navigator.clipboard.writeText(orderId);
     setIsCopied(true);
     setTimeout(() => setIsCopied(false), 2000);
   };
+
+  if (checkoutItems.length === 0 && step === "form" && !isSubmitting) {
+    return null; // Will redirect via useEffect
+  }
 
   return (
     <div className="min-h-screen bg-[#fdf8f5] font-sans selection:bg-black selection:text-white overflow-hidden">
@@ -208,7 +270,7 @@ Silakan segera konfirmasi pesanan ini.
         {step === "form" ? (
           <div className="animate-in fade-in slide-in-from-bottom-8 duration-700">
             <Link
-              href={`/products/${id}`}
+              href={isDirectCheckout ? `/products/${id}` : "/products"}
               className="inline-flex items-center gap-2 text-[#e75a40] text-sm font-black uppercase tracking-widest mb-8 hover:translate-x-[-4px] transition-transform"
             >
               <ArrowLeft className="w-4 h-4" />
@@ -221,21 +283,34 @@ Silakan segera konfirmasi pesanan ini.
                 <span className="text-[#e75a40]">Pesananmu</span>
               </h1>
               <div className="bg-white/50 backdrop-blur-sm px-4 py-2 rounded-2xl border border-black/5 flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-white p-1 shadow-sm border border-black/5">
-                  <Image
-                    src={product.img}
-                    alt={product.name}
-                    width={40}
-                    height={40}
-                    className="object-contain"
-                  />
+                <div className="flex -space-x-4">
+                  {checkoutItems.slice(0, 3).map((item, idx) => (
+                    <div
+                      key={item.id}
+                      className="w-10 h-10 rounded-xl bg-white p-1 shadow-sm border border-black/5 relative overflow-hidden"
+                      style={{ zIndex: 10 - idx }}
+                    >
+                      <Image
+                        src={item.img}
+                        alt={item.name}
+                        width={40}
+                        height={40}
+                        className="w-full h-full object-contain"
+                      />
+                    </div>
+                  ))}
+                  {checkoutItems.length > 3 && (
+                    <div className="w-10 h-10 rounded-xl bg-black text-white flex items-center justify-center text-[10px] font-black border border-white z-0">
+                      +{checkoutItems.length - 3}
+                    </div>
+                  )}
                 </div>
                 <div>
-                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                    Item Terpilih
+                  <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest">
+                    {checkoutItems.length} Item Terpilih
                   </p>
                   <p className="text-sm font-black text-black">
-                    {product.name}
+                    {formatPrice(orderTotal)}
                   </p>
                 </div>
               </div>
@@ -251,7 +326,7 @@ Silakan segera konfirmasi pesanan ini.
                       Identitas Pengambil
                     </h2>
                   </div>
-                  <span className="text-[10px] font-black text-gray-300 uppercase">
+                  <span className="text-[10px] font-black text-gray-500 uppercase">
                     Wajib Diisi
                   </span>
                 </div>
@@ -441,7 +516,7 @@ Silakan segera konfirmasi pesanan ini.
                   </>
                 ) : (
                   <>
-                    Pesan Sekarang
+                    Konfirmasi Pesanan
                     <ChevronRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
                   </>
                 )}
@@ -566,35 +641,41 @@ Silakan segera konfirmasi pesanan ini.
                   </div>
                 </div>
 
-                {/* ITEM BREAKDOWN (Shopee Style) */}
+                {/* ITEM BREAKDOWN */}
                 <div className="space-y-4 mb-10">
-                  <div className="flex items-center gap-4 p-4 border border-gray-100 rounded-3xl bg-gray-50/50">
-                    <div className="w-14 h-14 rounded-2xl bg-white p-2 shadow-sm shrink-0 border border-black/5 flex items-center justify-center">
-                      <Image
-                        src={product.img}
-                        alt={product.name}
-                        width={48}
-                        height={48}
-                        className="object-contain"
-                      />
+                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">
+                    Detail Pesanan
+                  </p>
+
+                  {checkoutItems.map((item) => (
+                    <div
+                      key={item.id}
+                      className="flex items-center gap-4 p-4 border border-gray-100 rounded-3xl bg-gray-50/50"
+                    >
+                      <div className="w-14 h-14 rounded-2xl bg-white p-2 shadow-sm shrink-0 border border-black/5 flex items-center justify-center">
+                        <Image
+                          src={item.img}
+                          alt={item.name}
+                          width={48}
+                          height={48}
+                          className="object-contain"
+                        />
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="font-black text-black leading-tight uppercase text-sm">
+                          {item.name}
+                        </h4>
+                        <p className="text-[11px] font-bold text-[#e75a40]">
+                          Qty: {item.quantity} Unit
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-black text-black">
+                          {formatPrice(item.priceNumber * item.quantity)}
+                        </p>
+                      </div>
                     </div>
-                    <div className="flex-1">
-                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-0.5">
-                        Produk Pilihan
-                      </p>
-                      <h4 className="font-black text-black leading-tight uppercase text-sm">
-                        {product.name}
-                      </h4>
-                      <p className="text-[11px] font-bold text-[#e75a40]">
-                        Qty: 1 Unit
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm font-black text-black">
-                        {product.price}
-                      </p>
-                    </div>
-                  </div>
+                  ))}
 
                   {/* Prices Table */}
                   <div className="px-4 py-6 border-y border-dashed border-gray-200 space-y-3">
@@ -603,7 +684,7 @@ Silakan segera konfirmasi pesanan ini.
                         Subtotal Produk
                       </span>
                       <span className="text-black font-black">
-                        {product.price}
+                        {formatPrice(orderTotal)}
                       </span>
                     </div>
                     <div className="flex justify-between items-center text-xs">
@@ -628,7 +709,7 @@ Silakan segera konfirmasi pesanan ini.
                       Total Bayar
                     </span>
                     <span className="text-2xl font-black text-[#e75a40]">
-                      {product.price}
+                      {formatPrice(orderTotal)}
                     </span>
                   </div>
                 </div>

@@ -6,9 +6,16 @@ import Link from "next/link";
 import Navbar from "@/components/ui/Navbar";
 import Footer from "@/components/ui/Footer";
 import { PRODUCTS } from "@/constants/products";
-import { ArrowLeft, ArrowRight, MessageCircle } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  MessageCircle,
+  ShoppingBag,
+} from "lucide-react";
+import { useCart } from "@/context/CartContext";
 
 export default function ProductsPage() {
+  const { addToCart } = useCart();
   return (
     <div className="min-h-screen bg-[#fdf8f5] font-sans selection:bg-black selection:text-white">
       <Navbar />
@@ -77,8 +84,20 @@ export default function ProductsPage() {
                   <span className="text-base md:text-2xl font-black text-black">
                     {product.price}
                   </span>
-                  <div className="w-7 h-7 md:w-12 md:h-12 bg-black text-white rounded-full flex items-center justify-center transition-transform group-hover:scale-110 group-hover:bg-[#e75a40]">
-                    <ArrowRight className="w-3.5 h-3.5 md:w-5 md:h-5" />
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        addToCart(product);
+                      }}
+                      className="w-7 h-7 md:w-12 md:h-12 bg-white border border-black/5 text-black rounded-full flex items-center justify-center transition-all hover:scale-110 hover:bg-gray-50 shadow-sm"
+                    >
+                      <ShoppingBag className="w-3.5 h-3.5 md:w-5 md:h-5" />
+                    </button>
+                    <div className="w-7 h-7 md:w-12 md:h-12 bg-black text-white rounded-full flex items-center justify-center transition-transform group-hover:scale-110 group-hover:bg-[#e75a40]">
+                      <ArrowRight className="w-3.5 h-3.5 md:w-5 md:h-5" />
+                    </div>
                   </div>
                 </div>
               </div>

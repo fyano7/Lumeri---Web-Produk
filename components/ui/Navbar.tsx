@@ -10,9 +10,13 @@ import {
   Users,
   Menu,
   MessageCircle,
+  ShoppingBag,
+  History,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useCart } from "@/context/CartContext";
+import CartDrawer from "./CartDrawer";
 
 const SHOP_ITEMS = [
   {
@@ -54,6 +58,7 @@ export default function Navbar() {
   const [isBannerVisible, setIsBannerVisible] = useState(true);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { totalItems, setIsCartOpen } = useCart();
   const [hoveredProduct, setHoveredProduct] = useState(SHOP_ITEMS[0]);
 
   // Handle transparent to solid background on scroll
@@ -76,6 +81,7 @@ export default function Navbar() {
 
   return (
     <div className="fixed top-0 w-full z-50 flex flex-col items-center">
+      <CartDrawer />
       {/* Top Announcement Bar */}
       {isBannerVisible && (
         <div className="w-full bg-[#1b2b5b] text-white text-xs md:text-sm font-bold tracking-wide py-2 overflow-hidden relative transition-all duration-300">
@@ -225,6 +231,14 @@ export default function Navbar() {
               <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 skew-x-12" />
               <span>Lihat Menu</span>
             </Link>
+
+            <Link
+              href="/history"
+              className="flex items-center gap-1.5 px-6 py-2.5 rounded-full bg-white hover:bg-gray-50 transition-all shadow-sm border border-black/5 font-bold hover:scale-105 active:scale-95"
+            >
+              <History className="w-4 h-4 text-[#e75a40]" />
+              Riwayat
+            </Link>
             {/* About Us Menu */}
             <div
               className="relative group"
@@ -292,6 +306,17 @@ export default function Navbar() {
             <button className="w-10 h-10 rounded-full bg-white hover:bg-gray-50 shadow-sm border border-black/5 flex items-center justify-center transition-all hover:scale-110 active:scale-95">
               <span className="font-bold text-sm">ID</span>
             </button>
+            <Link
+              href="/cart"
+              className="relative w-10 h-10 rounded-full bg-white hover:bg-gray-50 shadow-sm border border-black/5 flex items-center justify-center transition-all hover:scale-110 active:scale-95 group"
+            >
+              <ShoppingBag className="w-5 h-5" />
+              {totalItems > 0 && (
+                <span className="absolute -top-2 -right-2 w-6 h-6 bg-[#e75a40] text-white text-[11px] font-black rounded-full flex items-center justify-center border-2 border-white shadow-lg animate-in zoom-in duration-300">
+                  {totalItems}
+                </span>
+              )}
+            </Link>
             <a
               href="https://wa.me/628123456789"
               target="_blank"
@@ -351,6 +376,13 @@ export default function Navbar() {
               className="text-4xl font-black uppercase tracking-tighter"
             >
               Shop
+            </Link>
+            <Link
+              href="/history"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="text-4xl font-black uppercase tracking-tighter"
+            >
+              History
             </Link>
             <Link
               href="/about"

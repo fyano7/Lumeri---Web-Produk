@@ -14,11 +14,14 @@ import {
   Share2,
   Info,
   MessageCircle,
+  ShoppingBag,
 } from "lucide-react";
+import { useCart } from "@/context/CartContext";
 
 export default function ProductDetailPage() {
   const { id } = useParams();
   const router = useRouter();
+  const { addToCart } = useCart();
   const product = PRODUCTS.find((p) => p.id === id);
 
   if (!product) {
@@ -175,11 +178,14 @@ export default function ProductDetailPage() {
                 <MessageCircle className="w-6 h-6" />
                 Pesan Sekarang
               </Link>
-              <button className="w-16 h-16 border-2 border-gray-100 rounded-full flex items-center justify-center hover:bg-gray-50 transition-colors">
-                <Heart className="w-6 h-6 text-gray-400" />
+              <button
+                onClick={() => addToCart(product)}
+                className="flex-1 h-16 bg-white border-2 border-black/5 text-black rounded-full font-black text-lg hover:scale-[1.02] transition-transform flex items-center justify-center gap-3 shadow-md"
+              >
+                <ShoppingBag className="w-6 h-6" />+ Keranjang
               </button>
               <button className="w-16 h-16 border-2 border-gray-100 rounded-full flex items-center justify-center hover:bg-gray-50 transition-colors">
-                <Share2 className="w-6 h-6 text-gray-400" />
+                <Heart className="w-6 h-6 text-gray-400" />
               </button>
             </div>
 
@@ -205,29 +211,28 @@ export default function ProductDetailPage() {
       <Footer />
 
       {/* Shopee-style Mobile Sticky Bottom Bar */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-xl border-t border-black/5 px-4 py-3 flex items-center gap-3 shadow-[0_-10px_20px_rgba(0,0,0,0.05)]">
-        {/* Secondary Actions (Icons) */}
-        <div className="flex items-center gap-1 border-r border-black/5 pr-3">
-          <button className="flex flex-col items-center justify-center w-12 h-12 text-gray-400 hover:text-black transition-colors">
-            <Share2 className="w-5 h-5" />
-            <span className="text-[9px] font-bold uppercase mt-0.5">Share</span>
-          </button>
-          <button className="flex flex-col items-center justify-center w-12 h-12 text-[#e75a40] hover:text-[#e75a40]/80 transition-colors">
-            <Heart className="w-5 h-5" />
-            <span className="text-[9px] font-bold uppercase mt-0.5">Suka</span>
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-xl border-t border-black/5 px-6 py-4 flex items-center gap-3 shadow-[0_-15px_30px_rgba(0,0,0,0.08)]">
+        {/* Primary Actions (Buttons) */}
+        <div className="flex-[4] flex gap-2">
+          <Link
+            href={`/products/${id}/order`}
+            className="flex-1 h-12 bg-[#e75a40] text-white rounded-full font-black text-[10px] uppercase tracking-tight flex items-center justify-center active:scale-95 transition-transform shadow-lg shadow-[#e75a40]/20 gap-1.5"
+          >
+            <MessageCircle className="w-3.5 h-3.5" />
+            Pesan Sekarang
+          </Link>
+          <button
+            onClick={() => addToCart(product)}
+            className="flex-1 h-12 bg-white border-2 border-black/5 text-black rounded-full font-black text-[10px] uppercase tracking-tight flex items-center justify-center active:scale-95 transition-transform gap-1.5 shadow-sm"
+          >
+            <ShoppingBag className="w-3.5 h-3.5" />+ Keranjang
           </button>
         </div>
 
-        {/* Primary Actions (Buttons) */}
-        <div className="flex-1 flex gap-2">
-          <Link
-            href={`/products/${id}/order`}
-            className="flex-1 h-12 bg-[#e75a40] text-white rounded-lg font-black text-xs uppercase tracking-tight flex items-center justify-center active:scale-95 transition-transform shadow-lg shadow-[#e75a40]/20 gap-2"
-          >
-            <MessageCircle className="w-4 h-4" />
-            Pesan Sekarang
-          </Link>
-        </div>
+        {/* Heart Icon Circle */}
+        <button className="w-12 h-12 rounded-full border-2 border-gray-50 flex items-center justify-center shadow-sm text-gray-400 active:scale-95 transition-all">
+          <Heart className="w-5 h-5" />
+        </button>
       </div>
     </div>
   );
