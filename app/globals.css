@@ -4,13 +4,13 @@
   --background: #fdfdfc;
   --foreground: #171717;
 
-  /* Flavor Colors */
-  --color-coklat: #4a2c2a;
-  --color-strawberry: #ffccd5;
-  --color-tiramisu: #e6ccb2;
-  --color-samyang: #ffb5a7;
-  --color-samyang-spicy: #dc2626;
-  --color-piscok: #9c6644;
+  /* Flavor Colors - Refined Premium Palette */
+  --color-coklat: #3d1f1b;
+  --color-strawberry: #fff0f3;
+  --color-tiramisu: #fdf5e6;
+  --color-samyang: #fff7ed;
+  --color-samyang-spicy: #fef2f2;
+  --color-piscok: #8b5a2b;
 }
 
 @theme inline {
@@ -27,8 +27,13 @@
   }
 }
 
-html {
+html,
+body {
   scroll-behavior: smooth;
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100%;
+  position: relative;
 }
 
 body {
@@ -36,7 +41,6 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
   transition: background-color 0.8s ease-in-out;
-  overflow-x: hidden;
 }
 
 /* Hide scrollbar for Chrome, Safari and Opera */
@@ -70,6 +74,7 @@ body {
 
 .mask-image-rounded {
   -webkit-mask-image: -webkit-radial-gradient(white, black);
+  mask-image: radial-gradient(white, black);
   overflow: hidden;
   isolation: isolate;
 }

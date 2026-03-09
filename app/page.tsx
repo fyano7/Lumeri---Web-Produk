@@ -3,21 +3,21 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Navbar from "@/components/ui/Navbar";
 import Footer from "@/components/ui/Footer";
-import Scene from "@/components/3d/Scene";
-import PiscokModel from "@/components/3d/PiscokModel";
-import SamyangModel from "@/components/3d/SamyangModel";
-import {
-  Leaf,
-  Coffee,
-  Flame,
-  Plus,
-  ArrowRight,
-  LayoutGrid,
-} from "lucide-react";
+import { Plus, ArrowRight, LayoutGrid, Coffee, Flame } from "lucide-react";
+
+// Dynamically import heavy 3D components with SSR disabled for "Cache ringan" and safe loading
+const Scene = dynamic(() => import("@/components/3d/Scene"), { ssr: false });
+const PiscokModel = dynamic(() => import("@/components/3d/PiscokModel"), {
+  ssr: false,
+});
+const SamyangModel = dynamic(() => import("@/components/3d/SamyangModel"), {
+  ssr: false,
+});
 
 const MEMBERS_DATA = [
   {
@@ -93,16 +93,34 @@ export default function Home() {
     (typeof MEMBERS_DATA)[0] | null
   >(null);
 
-  // Change body background color dynamically based on state
+  // Performance Optimization: Only mount 3D canvas when near the top
+  const [isCanvasVisible, setIsCanvasVisible] = useState(true);
+  const topSectionRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
-    let color = "var(--background)";
+    if (!topSectionRef.current) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        setIsCanvasVisible(entries[0].isIntersecting);
+      },
+      // Keep canvas mounted until we are 1000px past the trigger
+      { rootMargin: "0px 0px 1000px 0px" },
+    );
+    observer.observe(topSectionRef.current);
+    return () => observer.disconnect();
+  }, []);
+
+  // Change body background color dynamically based on state with premium palette
+  useEffect(() => {
+    let color = "#ffffff"; // default
     if (activeProduct === "piscok") {
-      if (activeFlavor === "coklat") color = "var(--color-coklat)";
-      if (activeFlavor === "strawberry") color = "var(--color-strawberry)";
-      if (activeFlavor === "tiramisu") color = "var(--color-tiramisu)";
+      if (activeFlavor === "coklat") color = "#3d1f1b"; // Deep Cocoa
+      if (activeFlavor === "strawberry") color = "#fff0f3"; // Soft Rose
+      if (activeFlavor === "tiramisu") color = "#fdf5e6"; // Creamy Tiramisu
     } else {
-      if (activeFlavor === "samyang-keju") color = "var(--color-samyang-spicy)";
-      else color = "var(--color-samyang)";
+      if (activeFlavor === "samyang-keju")
+        color = "#fef2f2"; // Pale Spicy
+      else color = "#fff7ed"; // Soft Nori
     }
 
     document.body.style.backgroundColor = color;
@@ -128,7 +146,7 @@ export default function Home() {
           trigger: infoSectionRef.current,
           start: "top top",
           end: "bottom bottom",
-          scrub: 1, // Smooth dragging effect
+          scrub: 2, // Extra smooth dragging effect
         },
       });
 
@@ -167,31 +185,42 @@ export default function Home() {
       className="relative w-full min-h-screen font-sans selection:bg-black selection:text-white transition-colors duration-700"
     >
       <Navbar />
+      {/* Invisible anchor for canvas visibility tracking */}
+      <div
+        ref={topSectionRef}
+        className="absolute top-0 w-full h-[200vh] pointer-events-none"
+      />
 
-      {/* 3D Canvas Background (Fixed) */}
-      <Scene activeItem={activeProduct}>
-        {activeProduct === "piscok" ? (
-          <PiscokModel
-            flavor={
-              activeFlavor as
-                | "coklat"
-                | "strawberry"
-                | "tiramisu"
-                | "piscok-mix"
-            }
-          />
-        ) : (
-          <SamyangModel
-            variant={activeFlavor as "nori" | "keju" | "samyang-mix"}
-          />
+      {/* 3D Canvas Background (Fixed + Lazy Loaded) */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        {isCanvasVisible && (
+          <Scene activeItem={activeProduct}>
+            {activeProduct === "piscok" ? (
+              <PiscokModel
+                flavor={
+                  activeFlavor as
+                    | "coklat"
+                    | "strawberry"
+                    | "tiramisu"
+                    | "piscok-mix"
+                }
+              />
+            ) : (
+              <SamyangModel
+                variant={activeFlavor as "nori" | "keju" | "samyang-mix"}
+              />
+            )}
+          </Scene>
         )}
-      </Scene>
+      </div>
 
       {/* Main Content Overlay */}
-      <main className="relative z-10 w-full pt-32 no-scrollbar">
-        {/* Hero Section */}
-        <section className="min-h-[80vh] flex flex-col items-center justify-center text-center px-6 mt-10">
-          <h1 className="text-6xl md:text-8xl lg:text-[10rem] font-black tracking-[-0.04em] text-foreground mb-6 uppercase leading-none mix-blend-color-burn">
+      <main className="relative z-10 w-full pt-20 no-scrollbar">
+        {/* --- Hero Section --- */}
+        <section className="min-h-[90vh] flex flex-col items-center justify-center text-center px-6 relative">
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-white/10 pointer-events-none" />
+
+          <h1 className="text-6xl md:text-8xl lg:text-[10rem] font-serif font-black tracking-[-0.02em] mb-6 uppercase leading-none transition-all duration-700 text-[#fffaf0] [-webkit-text-stroke:2px_#271a14] md:[-webkit-text-stroke:4px_#271a14] [text-shadow:4px_4px_0px_#271a14] md:[text-shadow:12px_12px_0px_#271a14]">
             {activeProduct === "piscok" ? (
               <>
                 The Real
@@ -206,380 +235,134 @@ export default function Home() {
               </>
             )}
           </h1>
-          <p className="text-xl md:text-3xl font-medium max-w-2xl text-foreground/80 mix-blend-color-burn">
+
+          <p className="text-xl md:text-3xl font-serif font-bold max-w-2xl text-[#271a14] mb-12 tracking-tight bg-white/40 backdrop-blur-md px-8 py-4 rounded-3xl border border-[#271a14]/10 shadow-xl">
             {activeProduct === "piscok"
               ? "Piscok lumer di luar, renyah di dalam. Rasakan sensasi Lumeriá hari ini."
               : "Samyang Roll pedas mantap, krispi maksimal. Rasakan ledakan rasa Lumeriá hari ini."}
           </p>
 
-          {/* Product Toggle (Segment Controller) */}
-          <div className="mt-12 flex items-center p-1.5 bg-black/10 backdrop-blur-2xl rounded-full border border-black/10 shadow-inner relative w-fit group">
-            <div
-              className={`absolute top-1.5 bottom-1.5 rounded-full bg-white shadow-lg transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
-                activeProduct === "piscok"
-                  ? "left-1.5 w-[140px]"
-                  : "left-[calc(1.5px+140px+4px)] w-[160px]"
-              }`}
-            />
-            <button
-              onClick={() => {
-                setActiveProduct("piscok");
-                setActiveFlavor("coklat");
-              }}
-              className={`relative z-10 px-8 py-3 rounded-full font-black text-sm transition-colors duration-300 w-[140px] ${
-                activeProduct === "piscok"
-                  ? "text-black"
-                  : "text-black/60 hover:text-black/80"
-              }`}
-            >
-              Piscok Lumer
-            </button>
-            <button
-              onClick={() => {
-                setActiveProduct("samyang");
-                setActiveFlavor("samyang-nori");
-              }}
-              className={`relative z-10 px-8 py-3 rounded-full font-black text-sm transition-colors duration-300 w-[160px] ${
-                activeProduct === "samyang"
-                  ? "text-black"
-                  : "text-black/60 hover:text-black/80"
-              }`}
-            >
-              Samyang Roll
-            </button>
-          </div>
-        </section>
-
-        {/* Interactive Product Section (Piscok) */}
-        {activeProduct === "piscok" && (
-          <section
-            id="piscok"
-            className="min-h-[90vh] flex flex-col items-center justify-start pt-20 px-6"
-          >
-            <h2 className="text-4xl md:text-6xl font-black mb-12 text-foreground mix-blend-color-burn uppercase">
-              Explore Flavors
-            </h2>
-
-            {/* Flavor Switcher Buttons */}
-            <div className="flex flex-wrap items-center justify-center gap-4 bg-white/40 p-2 md:p-3 rounded-full backdrop-blur-xl border border-white/40 shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] md:mb-32">
-              <button
-                onClick={() => {
-                  setActiveProduct("piscok");
-                  setActiveFlavor("coklat");
-                }}
-                className={`flex items-center gap-2 px-6 py-3 md:px-8 md:py-4 rounded-full font-bold transition-all duration-300 ${
-                  activeProduct === "piscok" && activeFlavor === "coklat"
-                    ? "bg-white text-[#4a2c2a] shadow-lg scale-105"
-                    : "hover:bg-white/60 text-black/70"
+          <div className="flex flex-col items-center gap-10 relative z-50">
+            {/* Product Toggle (Improved Glassmorphism) */}
+            <div className="flex items-center p-1.5 bg-black/[0.03] backdrop-blur-3xl rounded-full border border-black/10 shadow-[0_8px_32px_rgba(0,0,0,0.05)] relative w-fit">
+              <div
+                className={`absolute top-1.5 bottom-1.5 rounded-full bg-white shadow-[0_4px_12px_rgba(0,0,0,0.1)] transition-all duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
+                  activeProduct === "piscok"
+                    ? "left-1.5 w-[140px]"
+                    : "left-[calc(1.5px+140px+4px)] w-[160px]"
                 }`}
-              >
-                <div className="w-5 h-5 rounded-full bg-[#4a2c2a] shadow-inner" />
-                Coklat
-              </button>
+              />
               <button
                 onClick={() => {
                   setActiveProduct("piscok");
                   setActiveFlavor("tiramisu");
                 }}
-                className={`flex items-center gap-2 px-6 py-3 md:px-8 md:py-4 rounded-full font-bold transition-all duration-300 ${
-                  activeProduct === "piscok" && activeFlavor === "tiramisu"
-                    ? "bg-white text-amber-900 shadow-lg scale-105"
-                    : "hover:bg-white/60 text-black/70"
+                className={`relative z-10 px-8 py-3 rounded-full font-black text-xs uppercase tracking-widest transition-colors duration-300 w-[140px] ${
+                  activeProduct === "piscok" ? "text-black" : "text-black/40"
                 }`}
               >
-                <Coffee className="w-5 h-5" />
-                Choco / Tiramisu
+                Piscok
               </button>
               <button
                 onClick={() => {
-                  setActiveProduct("piscok");
-                  setActiveFlavor("strawberry");
+                  setActiveProduct("samyang");
+                  setActiveFlavor("samyang-nori");
                 }}
-                className={`flex items-center gap-2 px-6 py-3 md:px-8 md:py-4 rounded-full font-bold transition-all duration-300 ${
-                  activeProduct === "piscok" && activeFlavor === "strawberry"
-                    ? "bg-white text-pink-600 shadow-lg scale-105"
-                    : "hover:bg-white/60 text-black/70"
+                className={`relative z-10 px-8 py-3 rounded-full font-black text-xs uppercase tracking-widest transition-colors duration-300 w-[160px] ${
+                  activeProduct === "samyang" ? "text-black" : "text-black/40"
                 }`}
               >
-                <div className="w-5 h-5 rounded-full bg-pink-500 shadow-inner" />
-                Strawberry
-              </button>
-              <button
-                onClick={() => {
-                  setActiveProduct("piscok");
-                  setActiveFlavor("piscok-mix");
-                }}
-                className={`flex items-center gap-2 px-6 py-3 md:px-8 md:py-4 rounded-full font-bold transition-all duration-300 ${
-                  activeProduct === "piscok" && activeFlavor === "piscok-mix"
-                    ? "bg-white text-[#6b4423] shadow-lg scale-105"
-                    : "hover:bg-white/60 text-black/70"
-                }`}
-              >
-                <LayoutGrid className="w-5 h-5" />
-                Mix
+                Samyang
               </button>
             </div>
-          </section>
-        )}
 
-        {/* Samyang Section */}
-        {activeProduct === "samyang" && (
-          <section
-            id="samyang"
-            className="min-h-screen flex flex-col items-center justify-center py-20 px-6 text-center"
-          >
-            <div
-              className={`bg-white/30 p-8 md:p-16 rounded-[4rem] backdrop-blur-xl border border-white/40 max-w-5xl w-full flex flex-col items-center shadow-2xl transition-all duration-700 opacity-100`}
-            >
-              <h2 className="text-5xl md:text-8xl font-black mb-6 text-foreground uppercase tracking-tighter">
-                Perfect Spice.
-              </h2>
-              <p className="text-xl md:text-3xl font-medium max-w-2xl text-foreground/80 mb-12">
-                Nikmati kelezatan Samyang Roll autentik. Gurih, pedas, dan
-                krispi yang bikin nagih.
-              </p>
-
-              <button
-                className={`flex items-center gap-3 px-10 py-5 rounded-full font-black text-xl transition-all duration-500 bg-red-600 text-white shadow-[0_0_40px_rgba(220,38,38,0.5)] scale-110`}
-              >
-                <Flame className={`w-6 h-6 text-yellow-300 animate-pulse`} />
-                Samyang Roll Active
-              </button>
-
-              {/* Samyang Flavor Switcher (Added to match Piscok) */}
-              <div className="flex items-center gap-3 mt-8 bg-black/5 p-2 rounded-full backdrop-blur-sm border border-black/5">
-                <button
-                  onClick={() => {
-                    setActiveProduct("samyang");
-                    setActiveFlavor("samyang-nori");
-                  }}
-                  className={`px-6 py-2 rounded-full font-bold transition-all ${
-                    activeFlavor === "samyang-nori"
-                      ? "bg-white text-black shadow-md"
-                      : "text-black/60 hover:text-black"
-                  }`}
-                >
-                  Nori
-                </button>
-                <button
-                  onClick={() => {
-                    setActiveProduct("samyang");
-                    setActiveFlavor("samyang-keju");
-                  }}
-                  className={`px-6 py-2 rounded-full font-bold transition-all ${
-                    activeFlavor === "samyang-keju"
-                      ? "bg-red-600 text-white shadow-md shadow-red-200"
-                      : "text-black/60 hover:text-black"
-                  }`}
-                >
-                  Keju
-                </button>
-              </div>
-            </div>
-          </section>
-        )}
-
-        {/* --- RE-ADDED: Sliding Info Cards Section --- */}
-        <section
-          ref={infoSectionRef}
-          className="relative w-full h-[300vh] bg-transparent z-10"
-        >
-          <div className="sticky top-0 h-screen w-full flex flex-col items-center justify-center overflow-hidden">
-            {/* Intro Text */}
-            <div
-              ref={infoTextRef}
-              className="absolute w-full px-6 text-center transform-gpu z-10 pointer-events-none"
-            >
-              <h2 className="text-5xl md:text-7xl lg:text-8xl font-black uppercase text-foreground leading-[1] tracking-tightmix-blend-color-burn drop-shadow-lg">
-                {activeProduct === "piscok" ? (
-                  <>
-                    PISCOK LUMER
-                    <br />
-                    LUMERIÁ
-                  </>
-                ) : (
-                  <>
-                    SAMYANG ROLL
-                    <br />
-                    LUMERIÁ
-                  </>
-                )}
-              </h2>
-              <p className="mt-8 text-xl md:text-2xl opacity-70 font-medium mix-blend-color-burn">
-                {activeProduct === "piscok"
-                  ? "(mari kita bahas kelezatannya)"
-                  : "(mari kita bahas kepedasannya)"}
-              </p>
-            </div>
-
-            {/* Sliding Cards Container */}
-            <div
-              ref={cardsWrapperRef}
-              className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-full flex items-center gap-16 md:gap-32 px-10 md:px-32 w-max z-20"
-            >
-              {/* Connecting Rope/String (SVG) */}
-              <div className="absolute top-1/2 left-0 w-full h-[6px] -translate-y-1/2 -z-10 opacity-50">
-                <svg width="100%" height="20" preserveAspectRatio="none">
-                  <path
-                    d="M 0 10 Q 150 20 300 10 T 600 10 T 900 10 T 1200 10 T 1500 10"
-                    stroke={activeProduct === "piscok" ? "#8b5a2b" : "#dc2626"}
-                    strokeWidth="4"
-                    fill="none"
-                    strokeDasharray="10, 5"
-                  />
-                </svg>
-              </div>
-
+            {/* Flavor Switcher (Premium Dots/Buttons) */}
+            <div className="flex flex-wrap items-center justify-center gap-4 bg-white/30 p-2.5 rounded-full backdrop-blur-3xl border border-white/40 shadow-[0_10px_40px_rgba(0,0,0,0.03)]">
               {activeProduct === "piscok" ? (
                 <>
-                  <div className="relative w-[300px] md:w-[400px] aspect-[3/4] bg-[#fdf8f5] rounded-xl shadow-2xl p-6 md:p-8 flex flex-col items-center justify-between border-2 border-[#d4bca0] transform rotate-3 before:content-[''] before:absolute before:-top-4 before:left-1/2 before:-translate-x-1/2 before:w-8 before:h-8 before:bg-[#8b5a2b] before:rounded-full before:shadow-inner before:border-4 before:border-[#fdf8f5] hover:scale-105 transition-transform duration-300">
-                    <div className="w-full text-[#2a1306] text-center border-b-2 border-dashed border-[#d4bca0] pb-4 mb-4 font-black uppercase tracking-widest text-xl">
-                      Coklat Lumer
-                    </div>
-                    <div className="relative w-full aspect-square bg-[#4a2c2a]/30 rounded-[2rem] border border-[#4a2c2a] flex items-center justify-center p-4 overflow-hidden mask-image-rounded">
-                      {/* Background Watermark Logo */}
-                      <div className="absolute inset-x-4 inset-y-8 opacity-20 pointer-events-none flex items-center justify-center mix-blend-multiply">
-                        <Image
-                          src="/logo/logo_lumeria.webp"
-                          alt="Lumeriá Watermark"
-                          fill
-                          className="object-contain"
-                        />
-                      </div>
-                      {/* Normal Product Image */}
-                      <Image
-                        src="/rasa-piscok/rasa-coklat.webp"
-                        alt="Coklat Lumer Flavor"
-                        fill
-                        className="object-cover rounded-2xl"
+                  {[
+                    { id: "coklat", label: "Coklat", color: "#3d1f1b" },
+                    {
+                      id: "tiramisu",
+                      label: "Tiramisu",
+                      color: "#c1a286",
+                    },
+                    { id: "strawberry", label: "Strawberry", color: "#ff8da1" },
+                  ].map((f) => (
+                    <button
+                      key={f.id}
+                      onClick={() => setActiveFlavor(f.id as any)}
+                      className={`flex items-center gap-2.5 px-6 py-3 rounded-full font-black text-[10px] uppercase tracking-widest transition-all duration-500 ${
+                        activeFlavor === f.id
+                          ? "bg-white text-black shadow-xl scale-105"
+                          : "text-black/30 hover:text-black/60"
+                      }`}
+                    >
+                      <div
+                        className="w-2.5 h-2.5 rounded-full shadow-inner"
+                        style={{ backgroundColor: f.color }}
                       />
-                    </div>
-                    <p className="text-center font-medium text-[#2a1306]/80 text-base md:text-lg mt-6 leading-snug">
-                      Double chocolate premium yang lumer parah, varian paling
-                      favorit pecandu coklat sejati.
-                    </p>
-                  </div>
-
-                  {/* Card 2: Tiramisu */}
-                  <div className="relative w-[300px] md:w-[400px] aspect-[3/4] bg-[#fdf8f5] rounded-xl shadow-2xl p-6 md:p-8 flex flex-col items-center justify-between border-2 border-[#d4bca0] transform -rotate-2 mt-20 before:content-[''] before:absolute before:-top-4 before:left-1/2 before:-translate-x-1/2 before:w-8 before:h-8 before:bg-[#8b5a2b] before:rounded-full before:shadow-inner before:border-4 before:border-[#fdf8f5] hover:scale-105 transition-transform duration-300">
-                    <div className="w-full text-[#2a1306] text-center border-b-2 border-dashed border-[#d4bca0] pb-4 mb-4 font-black uppercase tracking-widest text-xl">
-                      Tiramisu
-                    </div>
-                    <div className="relative w-full aspect-square bg-[#e6ccb2]/30 rounded-[2rem] border border-[#d4bca0] flex items-center justify-center p-4 overflow-hidden mask-image-rounded">
-                      {/* Background Watermark Logo */}
-                      <div className="absolute inset-x-4 inset-y-8 opacity-20 pointer-events-none flex items-center justify-center mix-blend-multiply">
-                        <Image
-                          src="/logo/logo_lumeria.webp"
-                          alt="Lumeriá Watermark"
-                          fill
-                          className="object-contain"
-                        />
-                      </div>
-                      <Image
-                        src="/rasa-piscok/piscok-tiramisu.webp"
-                        alt="Tiramisu Flavor"
-                        fill
-                        className="object-cover rounded-2xl"
-                      />
-                    </div>
-                    <p className="text-center font-medium text-[#2a1306]/80 text-base md:text-lg mt-6 leading-snug">
-                      Perpaduan aroma kopi dan krim mewah yang bikin kamu berasa
-                      lagi nongkrong asik di cafe.
-                    </p>
-                  </div>
-
-                  {/* Card 3: Strawberry */}
-                  <div className="relative w-[300px] md:w-[400px] aspect-[3/4] bg-[#fdf8f5] rounded-xl shadow-2xl p-6 md:p-8 flex flex-col items-center justify-between border-2 border-[#d4bca0] transform rotate-2 mb-10 before:content-[''] before:absolute before:-top-4 before:left-1/2 before:-translate-x-1/2 before:w-8 before:h-8 before:bg-[#8b5a2b] before:rounded-full before:shadow-inner before:border-4 before:border-[#fdf8f5] hover:scale-105 transition-transform duration-300">
-                    <div className="w-full text-[#2a1306] text-center border-b-2 border-dashed border-[#d4bca0] pb-4 mb-4 font-black uppercase tracking-widest text-xl">
-                      Strawberry
-                    </div>
-                    <div className="relative w-full aspect-square bg-[#ffccd5]/30 rounded-[2rem] border border-[#ffccd5] flex items-center justify-center p-4 overflow-hidden mask-image-rounded">
-                      {/* Background Watermark Logo */}
-                      <div className="absolute inset-x-4 inset-y-8 opacity-20 pointer-events-none flex items-center justify-center mix-blend-multiply">
-                        <Image
-                          src="/logo/logo_lumeria.webp"
-                          alt="Lumeriá Watermark"
-                          fill
-                          className="object-contain"
-                        />
-                      </div>
-                      <Image
-                        src="/rasa-piscok/piscok-starberry.webp"
-                        alt="Strawberry Flavor"
-                        fill
-                        className="object-cover rounded-2xl"
-                      />
-                    </div>
-                    <p className="text-center font-medium text-[#2a1306]/80 text-base md:text-lg mt-6 leading-snug">
-                      Manis seger buah stroberi ketemu lumeran coklat pekat,
-                      definisi mood booster paling nampol!
-                    </p>
-                  </div>
+                      {f.label}
+                    </button>
+                  ))}
                 </>
               ) : (
                 <>
-                  {/* Card 3: Samyang Nori */}
-                  <div className="relative w-[300px] md:w-[400px] aspect-[3/4] bg-[#fff5f5] rounded-xl shadow-2xl p-6 md:p-8 flex flex-col items-center justify-between border-2 border-red-200 transform rotate-2 mb-10 before:content-[''] before:absolute before:-top-4 before:left-1/2 before:-translate-x-1/2 before:w-8 before:h-8 before:bg-red-600 before:rounded-full before:shadow-inner before:border-4 before:border-white hover:scale-105 transition-transform duration-300">
-                    <div className="w-full text-red-900 text-center border-b-2 border-dashed border-red-200 pb-4 mb-4 font-black uppercase tracking-widest text-xl">
-                      Samyang Nori
-                    </div>
-                    <div className="relative w-full aspect-square bg-[#ffb5a7]/30 rounded-[2rem] border border-[#ffb5a7] flex items-center justify-center p-4 overflow-hidden mask-image-rounded">
-                      <Image
-                        src="/rasa-samyang/samyang-nori.webp"
-                        alt="Samyang Nori"
-                        fill
-                        className="object-cover rounded-2xl"
+                  {[
+                    { id: "samyang-nori", label: "Nori", color: "#1a2f1a" },
+                    { id: "samyang-keju", label: "Keju", color: "#dc2626" },
+                  ].map((f) => (
+                    <button
+                      key={f.id}
+                      onClick={() => setActiveFlavor(f.id as any)}
+                      className={`flex items-center gap-2.5 px-6 py-3 rounded-full font-black text-[10px] uppercase tracking-widest transition-all duration-500 ${
+                        activeFlavor === f.id
+                          ? "bg-red-600 text-white shadow-xl scale-105"
+                          : "text-black/30 hover:text-black/60"
+                      }`}
+                    >
+                      <div
+                        className={`w-2.5 h-2.5 rounded-full shadow-inner ${activeFlavor === f.id ? "bg-white" : ""}`}
+                        style={{
+                          backgroundColor: activeFlavor === f.id ? "" : f.color,
+                        }}
                       />
-                    </div>
-                    <p className="text-center font-medium text-red-800/80 text-base md:text-lg mt-6 leading-snug">
-                      Pedesnya mi Samyang dibalut Nori krispi, pas banget buat
-                      kamu yang suka tantangan rasa!
-                    </p>
-                  </div>
-
-                  {/* Card 4: Samyang Keju */}
-                  <div className="relative w-[300px] md:w-[400px] aspect-[3/4] bg-red-600 rounded-xl shadow-2xl p-6 md:p-8 flex flex-col items-center justify-between border-2 border-red-800 transform -rotate-1 mt-10 before:content-[''] before:absolute before:-top-4 before:left-1/2 before:-translate-x-1/2 before:w-8 before:h-8 before:bg-black before:rounded-full before:shadow-inner before:border-4 before:border-red-600 hover:scale-105 transition-transform duration-300">
-                    <div className="w-full text-white text-center border-b-2 border-dashed border-white/20 pb-4 mb-4 font-black uppercase tracking-widest text-xl">
-                      Samyang Keju
-                    </div>
-                    <div className="relative w-full aspect-square bg-black/10 rounded-[2rem] border border-white/10 flex items-center justify-center p-4 overflow-hidden mask-image-rounded">
-                      <Image
-                        src="/rasa-samyang/samyang-keju.webp"
-                        alt="Samyang Keju"
-                        fill
-                        className="object-cover rounded-2xl"
-                      />
-                    </div>
-                    <p className="text-center font-medium text-white/80 text-base md:text-lg mt-6 leading-snug">
-                      Pedes Samyang ketemu lumeran keju yang creamy abis, yakin
-                      nggak mau nyoba?
-                    </p>
-                  </div>
+                      {f.label}
+                    </button>
+                  ))}
                 </>
               )}
             </div>
           </div>
         </section>
-
-        {/* --- NEW: 3-Column Product Showcase (Image 4) --- */}
+        {/* --- SIMPLIFIED: Product Menu (Consolidated) --- */}
         <section
           id="products"
-          className="w-full relative z-20 bg-white pt-24 pb-0 overflow-hidden"
+          className="w-full relative z-20 pt-32 pb-0 overflow-hidden bg-white"
         >
-          <div className="w-full h-auto md:h-[85vh] flex flex-col md:flex-row">
+          <div className="mb-20 text-center px-6">
+            <h2 className="text-6xl md:text-9xl font-black uppercase text-black tracking-tighter leading-none mb-4">
+              Our Menu
+            </h2>
+            <p className="text-black/40 font-bold uppercase tracking-[0.3em] text-xs md:text-sm">
+              Discover the lumer goodness
+            </p>
+          </div>
+
+          <div className="w-full h-auto md:h-[90vh] flex flex-col md:flex-row border-t border-black/5 transition-all duration-700">
             {activeProduct === "piscok" ? (
               <>
                 {/* Column 1: Coklat Lumer */}
                 <div
                   onClick={() => router.push("/products/coklat")}
-                  className="flex-1 w-full group relative flex flex-col items-center justify-start pt-12 pb-20 bg-[#4a2c2a] transition-colors duration-500 overflow-hidden cursor-pointer md:border-r border-white/5"
+                  className="flex-1 w-full group relative flex flex-col items-center justify-center py-24 bg-[#3d1f1b] transition-all duration-700 overflow-hidden cursor-pointer hover:bg-[#2d1714]"
                 >
-                  <h3 className="relative z-20 text-3xl md:text-4xl font-black uppercase text-white mb-10 text-center">
+                  <h3 className="relative z-20 text-4xl md:text-6xl font-black uppercase text-white mb-10 text-center tracking-tight leading-none">
                     Coklat
                     <br />
                     Lumer
                   </h3>
-                  <div className="relative w-[80%] aspect-square z-10 drop-shadow-2xl transition-transform duration-500 group-hover:scale-105 rounded-[3rem] overflow-hidden mask-image-rounded border-4 border-white/20">
+                  <div className="relative w-[80%] md:w-[70%] aspect-square z-10 transition-transform duration-700 group-hover:scale-110 rounded-[3rem] overflow-hidden shadow-2xl border-4 border-white/10">
                     <Image
                       src="/rasa-piscok/rasa-coklat.webp"
                       alt="Coklat Lumer"
@@ -587,20 +370,26 @@ export default function Home() {
                       className="object-cover"
                     />
                   </div>
-                  <div className="absolute bottom-10 left-10 w-12 h-12 bg-white rounded-full flex items-center justify-center group-hover:bg-[#e75a40] group-hover:text-white transition-colors duration-300 shadow-xl z-20">
-                    <ArrowRight className="w-5 h-5 -rotate-45" />
+                  <p className="relative z-20 text-white/50 text-center px-10 font-bold text-base max-w-sm mt-12 mb-24 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                    Double chocolate premium yang lumer parah, varian paling
+                    favorit pecandu coklat sejati.
+                  </p>
+                  <div className="absolute bottom-12 left-1/2 -translate-x-1/2 w-16 h-16 bg-white rounded-full flex items-center justify-center group-hover:bg-white group-hover:scale-110 transition-all duration-500 shadow-2xl z-20">
+                    <ArrowRight className="w-8 h-8 -rotate-45" />
                   </div>
                 </div>
 
-                {/* Column 2: Tiramisu */}
+                {/* Column 2: Tiramisu (WHITE) */}
                 <div
                   onClick={() => router.push("/products/tiramisu")}
-                  className="flex-1 w-full group relative flex flex-col items-center justify-start pt-12 pb-20 bg-[#e6ccb2] transition-colors duration-500 overflow-hidden cursor-pointer md:border-r border-black/5"
+                  className="flex-1 w-full group relative flex flex-col items-center justify-center py-24 bg-white transition-all duration-700 overflow-hidden cursor-pointer hover:bg-[#fcfcfa] md:border-x border-black/5"
                 >
-                  <h3 className="relative z-20 text-3xl md:text-4xl font-black uppercase text-black mb-10 text-center">
+                  <h3 className="relative z-20 text-4xl md:text-6xl font-black uppercase text-black mb-10 text-center tracking-tight leading-none">
                     Tiramisu
+                    <br />
+                    Roll
                   </h3>
-                  <div className="relative w-[80%] aspect-square z-10 drop-shadow-2xl transition-transform duration-500 group-hover:scale-105 rounded-[3rem] overflow-hidden mask-image-rounded border-4 border-white">
+                  <div className="relative w-[80%] md:w-[70%] aspect-square z-10 transition-transform duration-700 group-hover:scale-110 rounded-[3rem] overflow-hidden shadow-2xl border-4 border-black/5">
                     <Image
                       src="/rasa-piscok/piscok-tiramisu.webp"
                       alt="Tiramisu"
@@ -608,21 +397,25 @@ export default function Home() {
                       className="object-cover"
                     />
                   </div>
-                  <div className="absolute bottom-10 left-10 w-12 h-12 bg-white rounded-full flex items-center justify-center group-hover:bg-black group-hover:text-white transition-colors duration-300 shadow-xl z-20">
-                    <ArrowRight className="w-5 h-5 -rotate-45" />
+                  <p className="relative z-20 text-black/40 text-center px-10 font-bold text-base max-w-sm mt-12 mb-24 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                    Perpaduan aroma kopi dan krim mewah yang bikin kamu berasa
+                    lagi nongkrong asik di cafe.
+                  </p>
+                  <div className="absolute bottom-12 left-1/2 -translate-x-1/2 w-16 h-16 bg-black rounded-full flex items-center justify-center group-hover:bg-black group-hover:scale-110 transition-all duration-500 shadow-2xl z-20 text-white border border-black/10">
+                    <ArrowRight className="w-8 h-8 -rotate-45" />
                   </div>
                 </div>
 
                 {/* Column 3: Strawberry */}
                 <div
                   onClick={() => router.push("/products/strawberry")}
-                  className="flex-1 w-full group relative flex flex-col items-center justify-start pt-12 pb-20 bg-[#ffccd5] transition-colors duration-500 overflow-hidden cursor-pointer md:border-r border-black/5"
+                  className="flex-1 w-full group relative flex flex-col items-center justify-center py-24 bg-[#fff0f3] transition-all duration-700 overflow-hidden cursor-pointer hover:bg-[#ffe4e9]"
                 >
-                  <h3 className="relative z-20 text-3xl md:text-4xl font-black uppercase text-black mb-10 text-center">
+                  <h3 className="relative z-20 text-4xl md:text-6xl font-black uppercase text-black mb-10 text-center tracking-tight leading-none">
                     Strawberry
                     <br />& Choco
                   </h3>
-                  <div className="relative w-[80%] aspect-square z-10 drop-shadow-2xl transition-transform duration-500 group-hover:scale-105 rounded-[3rem] overflow-hidden mask-image-rounded border-4 border-white">
+                  <div className="relative w-[80%] md:w-[70%] aspect-square z-10 transition-transform duration-700 group-hover:scale-110 rounded-[3rem] overflow-hidden shadow-2xl border-4 border-white">
                     <Image
                       src="/rasa-piscok/piscok-starberry.webp"
                       alt="Strawberry"
@@ -630,10 +423,12 @@ export default function Home() {
                       className="object-cover"
                     />
                   </div>
-                  <div className="absolute bottom-10 flex flex-col items-center w-full z-20">
-                    <button className="bg-white text-black font-bold px-8 py-4 rounded-full shadow-xl hover:scale-105 transition-transform flex items-center gap-2">
-                      Discover this product <Plus className="w-4 h-4" />
-                    </button>
+                  <p className="relative z-20 text-black/40 text-center px-10 font-bold text-base max-w-sm mt-12 mb-24 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                    Manis seger buah stroberi ketemu lumeran coklat pekat,
+                    definisi mood booster paling nampol!
+                  </p>
+                  <div className="absolute bottom-12 left-1/2 -translate-x-1/2 w-16 h-16 bg-black rounded-full flex items-center justify-center group-hover:bg-black group-hover:scale-110 transition-all duration-500 shadow-2xl z-20 text-white border border-black/10">
+                    <ArrowRight className="w-8 h-8 -rotate-45" />
                   </div>
                 </div>
               </>
@@ -642,14 +437,14 @@ export default function Home() {
                 {/* Column 1: Samyang Nori */}
                 <div
                   onClick={() => router.push("/products/samyang-nori")}
-                  className="flex-1 w-full group relative flex flex-col items-center justify-start pt-12 pb-20 bg-[#ffb5a7] transition-colors duration-500 overflow-hidden cursor-pointer md:border-r border-black/5"
+                  className="flex-1 w-full group relative flex flex-col items-center justify-center py-24 bg-[#1a2f1a] transition-all duration-700 overflow-hidden cursor-pointer hover:bg-[#142414]"
                 >
-                  <h3 className="relative z-20 text-3xl md:text-4xl font-black uppercase text-black mb-10 text-center">
+                  <h3 className="relative z-20 text-4xl md:text-6xl font-black uppercase text-white mb-10 text-center tracking-tight leading-none">
                     Samyang
                     <br />
                     Nori
                   </h3>
-                  <div className="relative w-[80%] aspect-square z-10 drop-shadow-2xl transition-transform duration-500 group-hover:scale-105 rounded-[3rem] overflow-hidden mask-image-rounded border-4 border-white">
+                  <div className="relative w-[90%] md:w-[80%] aspect-video z-10 transition-transform duration-700 group-hover:scale-110 rounded-[3rem] overflow-hidden shadow-2xl border-4 border-white/10">
                     <Image
                       src="/rasa-samyang/samyang-nori.webp"
                       alt="Samyang Nori"
@@ -657,25 +452,26 @@ export default function Home() {
                       className="object-cover"
                     />
                   </div>
-                  <div className="absolute bottom-10 left-10 w-12 h-12 bg-white rounded-full flex items-center justify-center group-hover:bg-black group-hover:text-white transition-colors duration-300 shadow-xl z-20">
-                    <ArrowRight className="w-6 h-6" />
+                  <p className="relative z-20 text-white/50 text-center px-10 font-bold text-base max-w-sm mt-12 mb-24 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                    Kombinasi pedas Samyang dan gurihnya rumput laut (nori) yang
+                    krispi di luar.
+                  </p>
+                  <div className="absolute bottom-12 left-1/2 -translate-x-1/2 w-16 h-16 bg-white rounded-full flex items-center justify-center group-hover:bg-white group-hover:scale-110 transition-all duration-500 shadow-2xl z-20">
+                    <ArrowRight className="w-8 h-8 -rotate-45" />
                   </div>
                 </div>
 
-                {/* Column 2: Samyang Keju */}
+                {/* Column 2: Samyang Keju (WHITE) */}
                 <div
                   onClick={() => router.push("/products/samyang-keju")}
-                  className="flex-1 w-full group relative flex flex-col items-center justify-start pt-12 pb-20 bg-[#dc2626] transition-colors duration-500 overflow-hidden cursor-pointer md:border-r border-black/5"
+                  className="flex-1 w-full group relative flex flex-col items-center justify-center py-24 bg-white transition-all duration-700 overflow-hidden cursor-pointer hover:bg-[#fcfcfa] md:border-l border-black/5"
                 >
-                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-700 scale-50 group-hover:scale-100 pointer-events-none text-center">
-                    <div className="w-[400px] h-[400px] bg-red-400/30 rounded-full blur-3xl animate-pulse" />
-                  </div>
-                  <h3 className="relative z-20 text-3xl md:text-4xl font-black uppercase text-white mb-10 text-center">
+                  <h3 className="relative z-20 text-4xl md:text-6xl font-black uppercase text-black mb-10 text-center tracking-tight leading-none">
                     Samyang
                     <br />
                     Keju
                   </h3>
-                  <div className="relative w-[80%] aspect-square z-10 drop-shadow-2xl transition-transform duration-500 group-hover:scale-105 rounded-[3rem] overflow-hidden mask-image-rounded border-4 border-white">
+                  <div className="relative w-[90%] md:w-[80%] aspect-video z-10 transition-transform duration-700 group-hover:scale-110 rounded-[3rem] overflow-hidden shadow-2xl border-4 border-black/5">
                     <Image
                       src="/rasa-samyang/samyang-keju.webp"
                       alt="Samyang Keju"
@@ -683,10 +479,12 @@ export default function Home() {
                       className="object-cover"
                     />
                   </div>
-                  <div className="absolute bottom-10 flex flex-col items-center w-full z-20">
-                    <button className="bg-white text-black font-bold px-8 py-4 rounded-full shadow-xl hover:scale-105 transition-transform flex items-center gap-2">
-                      Discover this product <Plus className="w-4 h-4" />
-                    </button>
+                  <p className="relative z-20 text-black/40 text-center px-10 font-bold text-base max-w-sm mt-12 mb-24 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                    Pedas membara Samyang bertemu lumeran keju gurih. Perpaduan
+                    maut buat pecinta pedas.
+                  </p>
+                  <div className="absolute bottom-12 left-1/2 -translate-x-1/2 w-16 h-16 bg-red-600 rounded-full flex items-center justify-center group-hover:bg-red-700 group-hover:scale-110 transition-all duration-500 shadow-2xl z-20 text-white">
+                    <ArrowRight className="w-8 h-8 -rotate-45" />
                   </div>
                 </div>
               </>

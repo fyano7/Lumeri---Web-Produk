@@ -68,7 +68,9 @@ export default function OrderPage() {
             id: directProduct.id,
             name: directProduct.name,
             price: directProduct.price,
-            priceNumber: parseInt(directProduct.price.replace(/[^0-9]/g, "")),
+            priceNumber: parseInt(
+              directProduct.price.split(" ")[1].replace(/\./g, ""),
+            ),
             img: directProduct.img,
             quantity: 1,
           },
@@ -77,7 +79,7 @@ export default function OrderPage() {
 
   const orderTotal =
     isDirectCheckout && directProduct
-      ? parseInt(directProduct.price.replace(/[^0-9]/g, ""))
+      ? parseInt(directProduct.price.split(" ")[1].replace(/\./g, ""))
       : totalPrice;
 
   const [step, setStep] = useState<"form" | "receipt">("form");
@@ -95,6 +97,15 @@ export default function OrderPage() {
   const [isCopied, setIsCopied] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const receiptRef = useRef<HTMLDivElement>(null);
+
+  // Freeze the data on submit so the receipt doesn't render empty when the cart clears
+  const [finalOrderData, setFinalOrderData] = useState<{
+    items: typeof checkoutItems;
+    total: number;
+  } | null>(null);
+
+  const displayItems = finalOrderData ? finalOrderData.items : checkoutItems;
+  const displayTotal = finalOrderData ? finalOrderData.total : orderTotal;
 
   useEffect(() => {
     const date = new Date();
@@ -155,8 +166,8 @@ export default function OrderPage() {
       ? "62" + data.phone.slice(1)
       : data.phone;
 
-    // Format item list for message
-    const itemsList = checkoutItems
+    // Use displayItems instead of checkoutItems
+    const itemsList = displayItems
       .map((item) => `- ${item.name} (${item.quantity}x) - ${item.price}`)
       .join("\n");
 
@@ -178,7 +189,7 @@ JADWAL PENGAMBILAN
 DETAIL PESANAN
 ${itemsList}
 
-TOTAL BAYAR: ${formatPrice(orderTotal)}
+TOTAL BAYAR: ${formatPrice(displayTotal)}
 METODE BAYAR: ${data.payment}
 
 ------------------------------------
@@ -216,6 +227,9 @@ Silakan segera konfirmasi pesanan ini.
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+
+    // Freeze order data
+    setFinalOrderData({ items: checkoutItems, total: orderTotal });
 
     // Save to history
     addToHistory({
@@ -258,7 +272,7 @@ Silakan segera konfirmasi pesanan ini.
     setTimeout(() => setIsCopied(false), 2000);
   };
 
-  if (checkoutItems.length === 0 && step === "form" && !isSubmitting) {
+  if (displayItems.length === 0 && step === "form" && !isSubmitting) {
     return null; // Will redirect via useEffect
   }
 
@@ -284,7 +298,7 @@ Silakan segera konfirmasi pesanan ini.
               </h1>
               <div className="bg-white/50 backdrop-blur-sm px-4 py-2 rounded-2xl border border-black/5 flex items-center gap-3">
                 <div className="flex -space-x-4">
-                  {checkoutItems.slice(0, 3).map((item, idx) => (
+                  {displayItems.slice(0, 3).map((item, idx) => (
                     <div
                       key={item.id}
                       className="w-10 h-10 rounded-xl bg-white p-1 shadow-sm border border-black/5 relative overflow-hidden"
@@ -299,18 +313,18 @@ Silakan segera konfirmasi pesanan ini.
                       />
                     </div>
                   ))}
-                  {checkoutItems.length > 3 && (
+                  {displayItems.length > 3 && (
                     <div className="w-10 h-10 rounded-xl bg-black text-white flex items-center justify-center text-[10px] font-black border border-white z-0">
-                      +{checkoutItems.length - 3}
+                      +{displayItems.length - 3}
                     </div>
                   )}
                 </div>
                 <div>
                   <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest">
-                    {checkoutItems.length} Item Terpilih
+                    {displayItems.length} Item Terpilih
                   </p>
                   <p className="text-sm font-black text-black">
-                    {formatPrice(orderTotal)}
+                    {formatPrice(displayTotal)}
                   </p>
                 </div>
               </div>
@@ -647,7 +661,7 @@ Silakan segera konfirmasi pesanan ini.
                     Detail Pesanan
                   </p>
 
-                  {checkoutItems.map((item) => (
+                  {displayItems.map((item) => (
                     <div
                       key={item.id}
                       className="flex items-center gap-4 p-4 border border-gray-100 rounded-3xl bg-gray-50/50"
@@ -684,7 +698,7 @@ Silakan segera konfirmasi pesanan ini.
                         Subtotal Produk
                       </span>
                       <span className="text-black font-black">
-                        {formatPrice(orderTotal)}
+                        {formatPrice(displayTotal)}
                       </span>
                     </div>
                     <div className="flex justify-between items-center text-xs">
@@ -709,7 +723,7 @@ Silakan segera konfirmasi pesanan ini.
                       Total Bayar
                     </span>
                     <span className="text-2xl font-black text-[#e75a40]">
-                      {formatPrice(orderTotal)}
+                      {formatPrice(displayTotal)}
                     </span>
                   </div>
                 </div>

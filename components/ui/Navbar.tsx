@@ -150,11 +150,11 @@ export default function Navbar() {
 
               {/* Mega Menu Dropdown */}
               <div
-                className={`absolute top-full left-1/2 -translate-x-1/2 mt-4 w-[700px] bg-white rounded-3xl shadow-[0_30px_60px_-15px_rgba(0,0,0,0.15)] border border-black/5 overflow-hidden transition-all duration-500 origin-top
+                className={`absolute top-full left-1/2 -translate-x-1/2 pt-4 w-[700px] transition-all duration-500 origin-top
                   ${isShopOpen ? "opacity-100 scale-y-100 pointer-events-auto translate-y-0" : "opacity-0 scale-y-95 pointer-events-none -translate-y-4"}
                 `}
               >
-                <div className="flex h-[380px]">
+                <div className="bg-white rounded-3xl shadow-[0_30px_60px_-15px_rgba(0,0,0,0.15)] border border-black/5 overflow-hidden flex h-[380px]">
                   {/* Left Column: Product Links */}
                   <div className="w-1/2 p-6 flex flex-col gap-2 border-r border-gray-100">
                     <h4 className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-2 px-4">
