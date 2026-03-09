@@ -27,18 +27,31 @@ export interface HistoryItem {
 interface CartContextType {
   items: CartItem[];
   history: HistoryItem[];
-  addToCart: (product: any) => void;
+  addToCart: (product: any, quantity?: number) => void;
   removeFromCart: (id: string) => void;
   updateQuantity: (id: string, quantity: number) => void;
   clearCart: () => void;
   addToHistory: (customerInfo: HistoryItem["customerInfo"]) => void;
   totalItems: number;
   totalPrice: number;
+  getItemPrice: (item: CartItem) => number;
   isCartOpen: boolean;
   setIsCartOpen: (isOpen: boolean) => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
+
+// Pricing Logic:
+// Piscok: 10k for 3, then +3k per extra piece
+// Samyang: 12k for 3, then +4k per extra piece
+export const getItemPriceTotal = (item: CartItem) => {
+  const isSamyang = item.id.includes("samyang");
+  const basePrice = isSamyang ? 12000 : 10000;
+  const extraPrice = isSamyang ? 4000 : 3000;
+
+  if (item.quantity <= 3) return basePrice;
+  return basePrice + (item.quantity - 3) * extraPrice;
+};
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -86,19 +99,20 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   }, [history, isInitialized]);
 
-  const addToCart = (product: any) => {
+  const addToCart = (product: any, initialQuantity?: number) => {
     setItems((prev) => {
       const existingItem = prev.find((item) => item.id === product.id);
       if (existingItem) {
         return prev.map((item) =>
           item.id === product.id
-            ? { ...item, quantity: item.quantity + 1 }
+            ? { ...item, quantity: item.quantity + (initialQuantity || 1) }
             : item,
         );
       }
 
-      // Parse price "Rp 10.000" to number 10000
-      const priceNumber = parseInt(product.price.replace(/[^0-9]/g, ""));
+      // Parse price "Rp 10.000 (3 pcs)" safely.
+      const priceString = product.price.split(" ")[1] || "0";
+      const priceNumber = parseInt(priceString.replace(/\./g, ""));
 
       return [
         ...prev,
@@ -108,7 +122,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
           price: product.price,
           priceNumber: priceNumber,
           img: product.img,
-          quantity: 1,
+          quantity: initialQuantity || 3,
         },
       ];
     });
@@ -120,7 +134,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   const updateQuantity = (id: string, quantity: number) => {
-    if (quantity <= 0) {
+    if (quantity < 3) {
       removeFromCart(id);
       return;
     }
@@ -140,10 +154,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
       id: `ORD-${Date.now()}`,
       date: new Date().toISOString(),
       items: [...items],
-      totalPrice: items.reduce(
-        (sum, item) => sum + item.priceNumber * item.quantity,
-        0,
-      ),
+      totalPrice: items.reduce((sum, item) => sum + getItemPriceTotal(item), 0),
       customerInfo: customerInfo,
     };
 
@@ -153,7 +164,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
   const totalPrice = items.reduce(
-    (sum, item) => sum + item.priceNumber * item.quantity,
+    (sum, item) => sum + getItemPriceTotal(item),
     0,
   );
 
@@ -167,6 +178,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
         updateQuantity,
         clearCart,
         addToHistory,
+        getItemPrice: getItemPriceTotal,
         totalItems,
         totalPrice,
         isCartOpen,

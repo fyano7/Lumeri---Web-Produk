@@ -16,8 +16,14 @@ export default function Scene({ children, activeItem = "piscok" }: SceneProps) {
     >
       <Canvas
         shadows
-        dpr={[1, 2]}
-        gl={{ antialias: true, toneMappingExposure: 1.5 }}
+        dpr={[1, 1.5]}
+        gl={{
+          antialias: false,
+          toneMappingExposure: 1.5,
+          powerPreference: "high-performance",
+          stencil: false,
+          depth: true,
+        }}
       >
         {/* We moved light setup into the specific model components to match the user's exact lighting preferences */}
         <Suspense fallback={null}>{children}</Suspense>

@@ -60,7 +60,7 @@ export default function ProductsPage() {
                     alt={product.name}
                     width={300}
                     height={300}
-                    className="object-contain drop-shadow-2xl"
+                    className="object-contain drop-shadow-2xl rounded-2xl"
                   />
                 </div>
                 <div className="absolute top-4 left-4">

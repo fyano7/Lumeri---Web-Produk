@@ -5,7 +5,7 @@
   --foreground: #171717;
 
   /* Flavor Colors */
-  --color-matcha: #c2d8b9;
+  --color-coklat: #4a2c2a;
   --color-strawberry: #ffccd5;
   --color-tiramisu: #e6ccb2;
   --color-samyang: #ffb5a7;
@@ -66,4 +66,10 @@ body {
 
 .animate-marquee:hover {
   animation-play-state: paused;
+}
+
+.mask-image-rounded {
+  -webkit-mask-image: -webkit-radial-gradient(white, black);
+  overflow: hidden;
+  isolation: isolate;
 }

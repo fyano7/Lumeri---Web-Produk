@@ -6,7 +6,7 @@ import * as THREE from "three";
 import gsap from "gsap";
 
 interface PiscokModelProps {
-  flavor?: "matcha" | "strawberry" | "tiramisu";
+  flavor?: "coklat" | "strawberry" | "tiramisu" | "piscok-mix";
 }
 
 // ─── Textures ─────────────────────────────────────────────────────────────
@@ -28,7 +28,7 @@ function makeCrepeTexture() {
     ctx.fillStyle = `rgba(${d > 0.5 ? "180,100,20" : "255,210,80"},${0.1 + d * 0.08})`;
     ctx.fillRect(x, 0, 5, 512);
   }
-  for (let i = 0; i < 60; i++) {
+  for (let i = 0; i < 20; i++) {
     ctx.beginPath();
     ctx.ellipse(
       Math.random() * 512,
@@ -39,11 +39,11 @@ function makeCrepeTexture() {
       0,
       Math.PI * 2,
     );
-    ctx.fillStyle = `rgba(100,45,5,${Math.random() * 0.15})`;
+    ctx.fillStyle = `rgba(100,45,5,${Math.random() * 0.1})`;
     ctx.fill();
   }
-  for (let i = 0; i < 2500; i++) {
-    ctx.fillStyle = `rgba(${Math.random() > 0.5 ? "100,45,5" : "240,180,60"},${Math.random() * 0.08})`;
+  for (let i = 0; i < 500; i++) {
+    ctx.fillStyle = `rgba(${Math.random() > 0.5 ? "100,45,5" : "240,180,60"},${Math.random() * 0.05})`;
     ctx.fillRect(
       Math.random() * 512,
       Math.random() * 512,
@@ -97,7 +97,7 @@ const ROLL_HALF = 7.5;
 const PLATE_Y = 2.2;
 
 // Helpers
-function makeRollGeo(segs = 42) {
+function makeRollGeo(segs = 32) {
   const geo = new THREE.CylinderGeometry(
     ROLL_R,
     ROLL_R,
@@ -129,7 +129,7 @@ function rollSurface(ax: number, angle: number) {
   );
 }
 
-export default function PiscokModel({ flavor = "tiramisu" }: PiscokModelProps) {
+export default function PiscokModel({ flavor = "coklat" }: PiscokModelProps) {
   const groupRef = useRef<THREE.Group>(null);
   const materialsRef = useRef<any>(null);
 
@@ -190,8 +190,8 @@ export default function PiscokModel({ flavor = "tiramisu" }: PiscokModelProps) {
       chocShavM,
       strawRM,
       leafM,
-      mGlaze: new THREE.MeshStandardMaterial({
-        color: 0x5ab828,
+      coklatGlaze: new THREE.MeshStandardMaterial({
+        color: 0x3d1f0d,
         roughness: 0.16,
         metalness: 0.05,
         transparent: true,
@@ -233,7 +233,7 @@ export default function PiscokModel({ flavor = "tiramisu" }: PiscokModelProps) {
         capAngles.forEach((a) => {
           const sp = rollSurface(ax, a);
           const r = 0.55 + Math.cos(a) * 0.3 + (Math.random() - 0.5) * 0.12;
-          const m = new THREE.Mesh(new THREE.SphereGeometry(r, 10, 8), mat);
+          const m = new THREE.Mesh(new THREE.SphereGeometry(r, 7, 5), mat);
           m.position.set(sp.x, sp.y + r * 0.55, sp.z + r * 0.2);
           m.castShadow = true;
           group.add(m);
@@ -249,7 +249,7 @@ export default function PiscokModel({ flavor = "tiramisu" }: PiscokModelProps) {
           const sp = rollSurface(ax, angle);
           const r = 0.35 * (1 - t * 0.45) * (0.8 + Math.random() * 0.25);
           const blob = new THREE.Mesh(
-            new THREE.SphereGeometry(Math.max(r, 0.1), 9, 7),
+            new THREE.SphereGeometry(Math.max(r, 0.1), 7, 5),
             mat,
           );
           blob.position.set(
@@ -270,7 +270,7 @@ export default function PiscokModel({ flavor = "tiramisu" }: PiscokModelProps) {
             const t = s / vSteps;
             const r = (0.32 - t * 0.18) * (0.85 + Math.random() * 0.2);
             const blob = new THREE.Mesh(
-              new THREE.SphereGeometry(Math.max(r, 0.08), 9, 7),
+              new THREE.SphereGeometry(Math.max(r, 0.08), 7, 5),
               mat,
             );
             blob.position.set(
@@ -282,7 +282,7 @@ export default function PiscokModel({ flavor = "tiramisu" }: PiscokModelProps) {
             group.add(blob);
           }
           const tip = new THREE.Mesh(
-            new THREE.SphereGeometry(0.22 + Math.random() * 0.08, 9, 7),
+            new THREE.SphereGeometry(0.22 + Math.random() * 0.08, 7, 5),
             mat,
           );
           tip.scale.y = 1.5;
@@ -290,7 +290,7 @@ export default function PiscokModel({ flavor = "tiramisu" }: PiscokModelProps) {
           group.add(tip);
         }
         // Small Puddle
-        const pool = new THREE.Mesh(new THREE.SphereGeometry(1, 14, 10), mat);
+        const pool = new THREE.Mesh(new THREE.SphereGeometry(1, 10, 8), mat);
         pool.scale.set(
           1.0 + Math.random() * 0.8,
           0.12,
@@ -307,7 +307,7 @@ export default function PiscokModel({ flavor = "tiramisu" }: PiscokModelProps) {
       // Big puddle
       for (let i = 0; i < 5; i++) {
         const m = new THREE.Mesh(
-          new THREE.SphereGeometry(2.5 + Math.random() * 1.0, 16, 12),
+          new THREE.SphereGeometry(2.5 + Math.random() * 1.0, 10, 8),
           mat,
         );
         m.scale.set(1.4 + Math.random() * 0.5, 0.1, 1.0 + Math.random() * 0.4);
@@ -326,7 +326,7 @@ export default function PiscokModel({ flavor = "tiramisu" }: PiscokModelProps) {
       [-ROLL_HALF, ROLL_HALF].forEach((ax) => {
         const side = ax < 0 ? -1 : 1;
         const disc = new THREE.Mesh(
-          new THREE.CircleGeometry(ROLL_R * 0.96, 32),
+          new THREE.CircleGeometry(ROLL_R * 0.96, 24),
           mats.chocDark,
         );
         disc.rotation.y = side < 0 ? Math.PI / 2 : -Math.PI / 2;
@@ -334,7 +334,7 @@ export default function PiscokModel({ flavor = "tiramisu" }: PiscokModelProps) {
         group.add(disc);
         for (let i = 0; i < 6; i++) {
           const r = 0.7 + Math.random() * 1.0;
-          const geo = new THREE.SphereGeometry(r, 12, 10);
+          const geo = new THREE.SphereGeometry(r, 8, 6);
           const p2 = geo.attributes.position;
           for (let v = 0; v < p2.count; v++) {
             p2.setX(v, p2.getX(v) * (0.5 + Math.random() * 0.5));
@@ -355,11 +355,11 @@ export default function PiscokModel({ flavor = "tiramisu" }: PiscokModelProps) {
     };
 
     // Toppings
-    const addMatchaToppings = (group: THREE.Group) => {
+    const addCoklatToppings = (group: THREE.Group) => {
       for (let i = 0; i < 28; i++) {
         const m = new THREE.Mesh(
-          new THREE.SphereGeometry(0.27 + Math.random() * 0.12, 8, 6),
-          mats.nutM,
+          new THREE.SphereGeometry(0.27 + Math.random() * 0.12, 6, 4),
+          mats.chocShavM,
         );
         m.scale.set(
           1.65 + Math.random() * 0.5,
@@ -443,7 +443,7 @@ export default function PiscokModel({ flavor = "tiramisu" }: PiscokModelProps) {
       defs.forEach((d) => {
         const surfY = Math.sqrt(Math.max(0, ROLL_R * ROLL_R - d.zOff * d.zOff));
         const baseY = surfY + 1.1;
-        const sGeo = new THREE.SphereGeometry(1.15, 16, 14);
+        const sGeo = new THREE.SphereGeometry(1.15, 12, 10);
         const sp = sGeo.attributes.position;
         for (let v = 0; v < sp.count; v++) {
           const yn = sp.getY(v) / 1.15;
@@ -475,7 +475,7 @@ export default function PiscokModel({ flavor = "tiramisu" }: PiscokModelProps) {
         }
         for (let p = 0; p < 5; p++) {
           const ang = (p / 5) * Math.PI * 2;
-          const lGeo = new THREE.SphereGeometry(0.38, 7, 5);
+          const lGeo = new THREE.SphereGeometry(0.38, 5, 4);
           const lp = lGeo.attributes.position;
           for (let v = 0; v < lp.count; v++) {
             lp.setX(v, lp.getX(v) * 0.35);
@@ -492,7 +492,7 @@ export default function PiscokModel({ flavor = "tiramisu" }: PiscokModelProps) {
         }
         if (d.half) {
           const face = new THREE.Mesh(
-            new THREE.CircleGeometry(1.0, 18),
+            new THREE.CircleGeometry(1.0, 12),
             new THREE.MeshStandardMaterial({
               color: 0xe84040,
               roughness: 0.46,
@@ -508,8 +508,8 @@ export default function PiscokModel({ flavor = "tiramisu" }: PiscokModelProps) {
         const geo = new THREE.TorusGeometry(
           0.22 + Math.random() * 0.08,
           0.09 + Math.random() * 0.03,
-          6,
-          10,
+          5,
+          8,
         );
         const tp = geo.attributes.position;
         for (let v = 0; v < tp.count; v++) {
@@ -567,7 +567,7 @@ export default function PiscokModel({ flavor = "tiramisu" }: PiscokModelProps) {
 
     const GY = PLATE_Y + ROLL_R;
 
-    const r1 = buildRoll(mats.mGlaze, addMatchaToppings);
+    const r1 = buildRoll(mats.coklatGlaze, addCoklatToppings);
     r1.position.set(-8.5, GY, -1.5);
     r1.rotation.y = 0.18;
     scene.add(r1);
@@ -601,7 +601,7 @@ export default function PiscokModel({ flavor = "tiramisu" }: PiscokModelProps) {
         new THREE.Vector2(18.8, 2.4),
         new THREE.Vector2(0, 2.1),
       ],
-      72,
+      32,
     );
     const plateMesh = new THREE.Mesh(plateGeo, mats.woodMat);
     plateMesh.castShadow = true;
@@ -609,7 +609,7 @@ export default function PiscokModel({ flavor = "tiramisu" }: PiscokModelProps) {
     scene.add(plateMesh);
 
     const innerP = new THREE.Mesh(
-      new THREE.CylinderGeometry(18.5, 18.5, 0.22, 72),
+      new THREE.CylinderGeometry(18.5, 18.5, 0.22, 32),
       mats.innerWoodMat,
     );
     innerP.position.y = PLATE_Y - 0.1;
@@ -650,11 +650,13 @@ export default function PiscokModel({ flavor = "tiramisu" }: PiscokModelProps) {
   useEffect(() => {
     if (groupRef.current) {
       let targetX = 0;
-      if (flavor === "matcha")
+      if (flavor === "coklat")
         targetX = 8.5; // center the left roll
       else if (flavor === "strawberry")
         targetX = -8.5; // center the right roll
-      else if (flavor === "tiramisu") targetX = 0; // center the middle roll
+      else if (flavor === "tiramisu")
+        targetX = 0; // center the middle roll
+      else if (flavor === "piscok-mix") targetX = 0; // center the middle/whole plate
 
       gsap.to(groupRef.current.position, {
         x: targetX,
@@ -689,7 +691,7 @@ export default function PiscokModel({ flavor = "tiramisu" }: PiscokModelProps) {
         intensity={3.0}
         color={0xfffbf0}
         castShadow
-        shadow-mapSize={[4096, 4096]}
+        shadow-mapSize={[1024, 1024]}
         shadow-bias={-0.0004}
       />
       <directionalLight

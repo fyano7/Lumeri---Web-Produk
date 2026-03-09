@@ -1,4 +1,4 @@
-import { Instagram, Twitter } from "lucide-react";
+import { MessageCircle } from "lucide-react";
 import Image from "next/image";
 
 export default function Footer() {
@@ -34,8 +34,8 @@ export default function Footer() {
               />
             </div>
             <p className="text-[#fdf8f5]/70 font-medium leading-relaxed">
-              Redefining the classic Indonesian street food experience with
-              premium ingredients and irresistible flavors.
+              Ngasih level baru buat jajanan kaki lima khas Indonesia pake bahan
+              premium dan rasa yang bener-bener nagih.
             </p>
           </div>
 
@@ -56,25 +56,23 @@ export default function Footer() {
               </a>
             </div>
             <div className="flex flex-col gap-4">
-              <h4 className="font-bold text-lg mb-2 text-[#e6ccb2]">Socials</h4>
+              <h4 className="font-bold text-lg mb-2 text-[#e6ccb2]">
+                Hubungi Kami
+              </h4>
               <a
-                href="https://instagram.com"
+                href="https://wa.me/628123456789"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="text-[#fdf8f5]/70 hover:text-white transition-colors flex items-center gap-2"
               >
-                <Instagram className="w-5 h-5" /> Instagram
-              </a>
-              <a
-                href="https://twitter.com"
-                className="text-[#fdf8f5]/70 hover:text-white transition-colors flex items-center gap-2"
-              >
-                <Twitter className="w-5 h-5" /> Twitter
+                <MessageCircle className="w-5 h-5" /> WhatsApp
               </a>
             </div>
           </div>
         </div>
 
         <div className="max-w-6xl mx-auto mt-16 pt-8 border-t border-[#fdf8f5]/10 text-center text-[#fdf8f5]/40 font-medium">
-          © {new Date().getFullYear()} Lumeriá. All rights reserved.
+          @2026 Lumeria | Gas beli!
         </div>
       </footer>
     </div>

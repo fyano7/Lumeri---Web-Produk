@@ -52,50 +52,35 @@ function makeRamenBlock(
   const G = new THREE.Group();
 
   const shape: [number, number, number][] = [];
-  for (let x = 0; x < 6; x++)
-    for (let y = 0; y < 3; y++)
-      for (let z = 0; z < 4; z++) {
-        const topCorner =
-          y === 2 && (x === 0 || x === 5) && (z === 0 || z === 3);
-        if (!topCorner) shape.push([x, y, z]);
+  for (let x = 0; x < 5; x++)
+    for (let y = 0; y < 2; y++)
+      for (let z = 0; z < 3; z++) {
+        // Simple shape
+        shape.push([x, y, z]);
       }
 
   shape.forEach(([x, y, z]) => {
     let c;
-    if (y === 2) {
-      c =
-        (x + z) % 3 === 0
-          ? colors.noodleHi
-          : (x + z) % 3 === 1
-            ? colors.noodleTop
-            : colors.noodleMid;
-    } else if (y === 1) {
-      c = (x * z) % 2 === 0 ? colors.noodleMid : colors.noodleBase;
+    if (y === 1) {
+      c = (x + z) % 2 === 0 ? colors.noodleHi : colors.noodleMid;
     } else {
       c = colors.noodleBase;
     }
     G.add(createVox(x, y, z, c, 0.72));
   });
 
-  for (let x = 0; x < 6; x++)
-    for (let z = 0; z < 4; z++) {
-      if (
-        (x === 0 && z === 0) ||
-        (x === 5 && z === 0) ||
-        (x === 0 && z === 3) ||
-        (x === 5 && z === 3)
-      )
-        continue;
+  for (let x = 0; x < 5; x++)
+    for (let z = 0; z < 3; z++) {
       const c = (x + z) % 2 === 0 ? colors.noodleHi : colors.sauce;
       const slab = new THREE.Mesh(
-        new THREE.BoxGeometry(0.95, 0.25, 0.95),
+        new THREE.BoxGeometry(0.95, 0.2, 0.95),
         new THREE.MeshStandardMaterial({
           color: c,
           roughness: 0.35,
           metalness: 0.05,
         }),
       );
-      slab.position.set(x, 3.12, z);
+      slab.position.set(x, 2.1, z);
       slab.castShadow = true;
       G.add(slab);
     }
@@ -161,21 +146,14 @@ function makeRamenBlock(
 }
 
 export default function SamyangModel({
-  variant = "original",
+  variant = "nori",
 }: {
-  variant?: "original" | "spicy";
+  variant?: "nori" | "keju" | "samyang-mix";
 }) {
   const groupRef = useRef<THREE.Group>(null);
 
   const sceneGroup = useMemo(() => {
     const ROOT = new THREE.Group();
-
-    // Adjust colors based on variant
-    const currentCols = { ...COL };
-    if (variant === "spicy") {
-      currentCols.sauce = 0xff0000; // Brighter red
-      currentCols.noodleTop = 0xff4400;
-    }
 
     // RACK
     const RACK = new THREE.Group();
@@ -226,8 +204,20 @@ export default function SamyangModel({
       [-1, 3],
       [8, 3],
     ];
-    layout.forEach(([bx, bz]) => {
-      const block = makeRamenBlock(bx, 1.0, bz, currentCols);
+    layout.forEach(([bx, bz], idx) => {
+      // For mix, alternate between Nori (base) and Keju
+      let blockCols = { ...COL };
+      if (variant === "samyang-mix") {
+        if (idx % 2 === 1) {
+          blockCols.sauce = 0xffa500;
+          blockCols.noodleTop = 0xffcc00;
+        }
+      } else if (variant === "keju") {
+        blockCols.sauce = 0xffa500;
+        blockCols.noodleTop = 0xffcc00;
+      }
+
+      const block = makeRamenBlock(bx, 1.0, bz, blockCols);
       block.rotation.y = (Math.random() - 0.5) * 0.15;
       ROOT.add(block);
     });
@@ -258,7 +248,7 @@ export default function SamyangModel({
         intensity={1.5}
         color={0xfff0cc}
         castShadow
-        shadow-mapSize={[2048, 2048]}
+        shadow-mapSize={[1024, 1024]}
       />
       <directionalLight
         position={[-12, 10, -12]}

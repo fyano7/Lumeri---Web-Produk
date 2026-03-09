@@ -87,15 +87,15 @@ export default function AboutPage() {
 
         <div className="max-w-4xl hero-content relative z-10">
           <span className="inline-block bg-[#8b5a2b] text-white text-[10px] font-black uppercase tracking-[0.3em] px-6 py-2 rounded-full mb-8">
-            Dibalik Lumeriá
+            Kenalan sama Lumeriá
           </span>
           <h1 className="text-6xl md:text-8xl font-black uppercase tracking-tighter text-black leading-none mb-8">
-            Lebih Dari Sekadar <br />{" "}
-            <span className="text-[#e75a40]">Camilan Biasa</span>
+            Bukan Cuma <br />{" "}
+            <span className="text-[#e75a40]">Jajanan Biasa</span>
           </h1>
           <p className="text-xl md:text-2xl text-gray-500 font-medium leading-relaxed max-w-2xl mx-auto">
-            Lumeriá lahir dari semangat kreativitas siswa RPL, menggabungkan
-            cita rasa tradisional dengan sentuhan inovasi modern.
+            Lumeriá bermula dari ide iseng anak RPL yang pengen bikin camilan
+            tradisional naik kelas dengan sentuhan modern yang asik.
           </p>
         </div>
       </section>
@@ -127,25 +127,24 @@ export default function AboutPage() {
           <div className="flex-1 animate-up">
             <h2 className="text-4xl md:text-5xl font-black text-black mb-8 leading-tight">
               Awal Mula <br />{" "}
-              <span className="text-[#8b5a2b]">Perjalanan Kami</span>
+              <span className="text-[#8b5a2b]">Cerita Kita</span>
             </h2>
             <div className="space-y-6 text-gray-600 font-medium text-lg leading-relaxed">
               <p>
-                Lumeriá bermula dari sebuah proyek kolaborasi di kelas XI RPL 1.
-                Kami ingin menciptakan sesuatu yang nyata, sesuatu yang bisa
-                dinikmati oleh semua orang, bukan sekadar baris kode di layar
-                komputer.
+                Lumeriá itu sebenernya buah dari kolaborasi seru di kelas XI RPL
+                1. Kita nggak mau cuma jago ngetik kode di layar, tapi juga
+                pengen bikin sesuatu yang nyata dan bisa dinikmati
+                bareng-bareng.
               </p>
               <p>
-                Dengan menggabungkan kemampuan teknis kami dalam membangun
-                *branding* digital dan kecintaan kami pada camilan nusantara,
-                kami menghadirkan Piscok dan Samyang Roll dengan kualitas
-                premium.
+                Berbekal skill di dunia digital buat branding dan rasa penasaran
+                kita sama camilan nusantara, akhirnya lahir deh Piscok dan
+                Samyang Roll versi premium ini.
               </p>
               <p>
-                Setiap detail dari produk kami, mulai dari pemilihan Pisang Raja
-                hingga pengembangan *website* ini, dilakukan dengan penuh
-                dedikasi oleh seluruh anggota tim.
+                Kita serius banget lho ngerjainnya. Mulai dari milih Pisang Raja
+                yang paling oke sampai ngerakit website ini, semuanya kita
+                lakuin dengan sepenuh hati demi kepuasan kalian.
               </p>
             </div>
           </div>
@@ -175,8 +174,8 @@ export default function AboutPage() {
               Komitmen Lumeriá
             </p>
             <p className="text-white/60 text-lg font-medium">
-              Mewujudkan pengalaman kuliner premium yang menggabungkan cita rasa
-              tradisional dengan inovasi modern kelas dunia.
+              Bikin pengalaman ngemil kamu jadi lebih berkelas dengan perpaduan
+              rasa tradisional dan inovasi yang nggak main-main.
             </p>
           </div>
 
@@ -185,20 +184,20 @@ export default function AboutPage() {
             {[
               {
                 icon: <Target className="w-12 h-12" />,
-                title: "Kualitas Premium",
-                desc: "Hanya menggunakan bahan-bahan pilihan seperti Pisang Raja terbaik dan coklat batang berkualitas tinggi untuk rasa yang tak tertandingi.",
-                color: "bg-[#c2d8b9]", // Matcha Green
+                title: "Kualitas Juara",
+                desc: "Kita cuma pake bahan pilihan kayak Pisang Raja terbaik dan coklat premium biar rasanya bener-bener nendang.",
+                color: "bg-[#4a2c2a]", // Chocolate Brown
               },
               {
                 icon: <Heart className="w-12 h-12" />,
-                title: "Inovasi Rasa",
-                desc: "Berani bereksperimen dengan varian rasa unik seperti Matcha, Tiramisu, hingga Samyang untuk sensasi rasa yang revolusioner.",
+                title: "Eksperimen Seru",
+                desc: "Nggak takut buat nyoba hal baru, mulai dari Coklat Lumer, Tiramisu, sampe Samyang Roll yang bakalan bikin lidah kamu kaget!",
                 color: "bg-[#ffccd5]", // Strawberry Pink
               },
               {
                 icon: <Users className="w-12 h-12" />,
-                title: "Semangat Komunal",
-                desc: "Membangun hubungan erat dengan komunitas melalui layanan pengantaran langsung yang personal dan penuh dedikasi.",
+                title: "Solid Terus",
+                desc: "Kita pengen deket sama kalian lewat pelayanan yang ramah dan gercep, dari kita buat kalian semua.",
                 color: "bg-[#d8b9ff]", // Lavender Purple
               },
             ].map((item, i) => (
@@ -232,7 +231,7 @@ export default function AboutPage() {
           <div className="flex-1 relative">
             <div className="relative aspect-[16/9] rounded-[3rem] overflow-hidden shadow-2xl transition-transform duration-700 hover:scale-[1.02]">
               <Image
-                src="/rasa-piscok/piscok-matcha.webp"
+                src="/rasa-piscok/rasa-coklat.webp"
                 alt="Product Innovation"
                 fill
                 className="object-contain bg-white/50 p-12"
@@ -245,10 +244,9 @@ export default function AboutPage() {
               <span className="text-[#e75a40]">Inovasi Kami</span>
             </h2>
             <p className="text-gray-500 font-medium text-lg leading-relaxed">
-              Kami tidak pernah berhenti bereksperimen. Setiap produk Lumeriá
-              diriset dengan teliti untuk menemukan perpaduan rasa yang paling
-              pas, sehingga setiap gigitan memberikan kesan yang mendalam untuk
-              Anda.
+              Kita nggak akan berhenti buat terus ngulik. Setiap produk Lumeriá
+              udah lewat proses trial yang panjang biar dapet rasa yang pas
+              banget di hati kamu. Pokoknya, tiap gigitan harus berkesan!
             </p>
           </div>
         </div>
@@ -260,12 +258,13 @@ export default function AboutPage() {
           <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000"></div>
 
           <h2 className="text-4xl md:text-7xl font-black uppercase mb-8 leading-none relative z-10">
-            Jadilah Bagian <br />{" "}
-            <span className="text-pink-400">Dari Cerita Kami</span>
+            Yuk Jadi Bagian <br />{" "}
+            <span className="text-pink-400">Dari Perjalanan Kita</span>
           </h2>
           <p className="text-white/70 text-lg md:text-xl font-medium mb-12 max-w-2xl mx-auto relative z-10">
-            Dukung karya siswa RPL dan nikmati camilan terbaik. Pesan sekarang
-            untuk pengiriman langsung ke kelasmu!
+            Dukung terus karya anak RPL dan cobain camilan paling hits minggu
+            ini. Langsung pesan sekarang ya, biar bisa kita anterin sampai depan
+            mata!
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-6 relative z-10">
             <Link

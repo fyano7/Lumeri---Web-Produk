@@ -15,6 +15,7 @@ export default function CartDrawer() {
     removeFromCart,
     totalPrice,
     totalItems,
+    getItemPrice,
   } = useCart();
 
   const drawerRef = useRef<HTMLDivElement>(null);
@@ -123,7 +124,7 @@ export default function CartDrawer() {
                     alt={item.name}
                     width={60}
                     height={60}
-                    className="object-contain"
+                    className="object-contain rounded-xl"
                   />
                 </div>
                 <div className="flex-1 flex flex-col justify-between">
@@ -132,7 +133,7 @@ export default function CartDrawer() {
                       {item.name}
                     </h4>
                     <p className="text-xs font-bold text-[#e75a40] mt-1">
-                      {item.price}
+                      {formatPrice(getItemPrice(item))}
                     </p>
                   </div>
 
@@ -204,7 +205,7 @@ export default function CartDrawer() {
               onClick={() => setIsCartOpen(false)}
               className="w-full h-16 bg-black text-white rounded-2xl font-black text-sm uppercase tracking-widest flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-95 transition-all shadow-xl group"
             >
-              Lanjutkan Checkout
+              Pesan Sekarang
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </Link>
           </div>

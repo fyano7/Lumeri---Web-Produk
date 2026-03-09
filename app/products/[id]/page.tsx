@@ -12,16 +12,19 @@ import {
   Star,
   Heart,
   Share2,
-  Info,
   MessageCircle,
+  Info,
   ShoppingBag,
+  Minus,
+  Plus,
 } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 
 export default function ProductDetailPage() {
   const { id } = useParams();
   const router = useRouter();
-  const { addToCart } = useCart();
+  const { addToCart, isCartOpen } = useCart();
+  const [quantity, setQuantity] = React.useState(3);
   const product = PRODUCTS.find((p) => p.id === id);
 
   if (!product) {
@@ -67,7 +70,7 @@ export default function ProductDetailPage() {
                 alt={product.name}
                 width={500}
                 height={500}
-                className="object-contain drop-shadow-[0_35px_35px_rgba(0,0,0,0.25)] transition-transform duration-700 hover:scale-110"
+                className="object-contain drop-shadow-[0_35px_35px_rgba(0,0,0,0.25)] transition-transform duration-700 hover:scale-110 rounded-3xl"
                 priority
               />
             </div>
@@ -84,7 +87,7 @@ export default function ProductDetailPage() {
                     alt="thumb"
                     width={60}
                     height={60}
-                    className="object-contain opacity-60"
+                    className="object-contain opacity-60 rounded-xl"
                   />
                 </div>
               ))}
@@ -170,23 +173,49 @@ export default function ProductDetailPage() {
             </div>
 
             {/* Desktop CTA's (Hidden on Mobile) */}
-            <div className="hidden md:flex flex-row gap-4 mb-12">
-              <Link
-                href={`/products/${id}/order`}
-                className="flex-1 h-16 bg-[#e75a40] text-white rounded-full font-black text-xl hover:scale-[1.02] transition-transform flex items-center justify-center gap-3 shadow-xl"
-              >
-                <MessageCircle className="w-6 h-6" />
-                Pesan Sekarang
-              </Link>
-              <button
-                onClick={() => addToCart(product)}
-                className="flex-1 h-16 bg-white border-2 border-black/5 text-black rounded-full font-black text-lg hover:scale-[1.02] transition-transform flex items-center justify-center gap-3 shadow-md"
-              >
-                <ShoppingBag className="w-6 h-6" />+ Keranjang
-              </button>
-              <button className="w-16 h-16 border-2 border-gray-100 rounded-full flex items-center justify-center hover:bg-gray-50 transition-colors">
-                <Heart className="w-6 h-6 text-gray-400" />
-              </button>
+            <div className="hidden md:flex flex-col gap-6 mb-12">
+              <div className="flex items-center gap-6">
+                <div className="flex items-center bg-gray-50 border-2 border-black/5 rounded-2xl p-2 shadow-sm">
+                  <button
+                    onClick={() => setQuantity(Math.max(3, quantity - 1))}
+                    className="w-12 h-12 rounded-xl hover:bg-white flex items-center justify-center transition-all text-black hover:shadow-md"
+                  >
+                    <Minus className="w-5 h-5" strokeWidth={3} />
+                  </button>
+                  <span className="w-16 text-center text-xl font-black text-black">
+                    {quantity}
+                  </span>
+                  <button
+                    onClick={() => setQuantity(quantity + 1)}
+                    className="w-12 h-12 rounded-xl hover:bg-white flex items-center justify-center transition-all text-black hover:shadow-md"
+                  >
+                    <Plus className="w-5 h-5" strokeWidth={3} />
+                  </button>
+                </div>
+                <div className="text-sm font-bold text-gray-400 uppercase tracking-widest">
+                  Minimal 3 pcs
+                </div>
+              </div>
+
+              <div className="flex flex-row gap-4">
+                <Link
+                  href={`/products/${id}/order`}
+                  className="flex-[1.5] h-16 bg-[#e75a40] text-white rounded-full font-black text-xl hover:scale-[1.02] transition-transform flex items-center justify-center gap-3 shadow-xl"
+                >
+                  <MessageCircle className="w-6 h-6" />
+                  Pesan Sekarang
+                </Link>
+                <button
+                  onClick={() => addToCart(product, quantity)}
+                  className="flex-1 h-16 bg-white border-2 border-black/5 text-black rounded-full font-black text-lg hover:scale-[1.02] transition-transform flex items-center justify-center gap-3 shadow-md"
+                >
+                  <ShoppingBag className="w-6 h-6" />
+                  Masukan Keranjang
+                </button>
+                <button className="w-16 h-16 border-2 border-gray-100 rounded-full flex items-center justify-center hover:bg-gray-50 transition-colors">
+                  <Heart className="w-6 h-6 text-gray-400" />
+                </button>
+              </div>
             </div>
 
             {/* Delivery Info */}
@@ -211,7 +240,9 @@ export default function ProductDetailPage() {
       <Footer />
 
       {/* Shopee-style Mobile Sticky Bottom Bar */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-xl border-t border-black/5 px-6 py-4 flex items-center gap-3 shadow-[0_-15px_30px_rgba(0,0,0,0.08)]">
+      <div
+        className={`md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-xl border-t border-black/5 px-6 py-4 flex items-center gap-3 shadow-[0_-15px_30px_rgba(0,0,0,0.08)] transition-transform duration-300 ${isCartOpen ? "translate-y-full" : "translate-y-0"}`}
+      >
         {/* Primary Actions (Buttons) */}
         <div className="flex-[4] flex gap-2">
           <Link
@@ -222,10 +253,11 @@ export default function ProductDetailPage() {
             Pesan Sekarang
           </Link>
           <button
-            onClick={() => addToCart(product)}
+            onClick={() => addToCart(product, quantity)}
             className="flex-1 h-12 bg-white border-2 border-black/5 text-black rounded-full font-black text-[10px] uppercase tracking-tight flex items-center justify-center active:scale-95 transition-transform gap-1.5 shadow-sm"
           >
-            <ShoppingBag className="w-3.5 h-3.5" />+ Keranjang
+            <ShoppingBag className="w-3.5 h-3.5" />
+            Masukan Keranjang
           </button>
         </div>
 

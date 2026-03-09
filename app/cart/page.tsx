@@ -16,8 +16,14 @@ import Navbar from "@/components/ui/Navbar";
 import Footer from "@/components/ui/Footer";
 
 export default function CartPage() {
-  const { items, updateQuantity, removeFromCart, totalPrice, totalItems } =
-    useCart();
+  const {
+    items,
+    updateQuantity,
+    removeFromCart,
+    totalPrice,
+    totalItems,
+    getItemPrice,
+  } = useCart();
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat("id-ID", {
@@ -137,7 +143,7 @@ export default function CartPage() {
                         </div>
                         <div className="text-right">
                           <span className="text-base font-black text-black italic">
-                            {formatPrice(item.priceNumber * item.quantity)}
+                            {formatPrice(getItemPrice(item))}
                           </span>
                         </div>
                       </div>

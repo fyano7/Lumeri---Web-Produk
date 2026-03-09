@@ -20,11 +20,11 @@ import CartDrawer from "./CartDrawer";
 
 const SHOP_ITEMS = [
   {
-    id: "matcha",
-    name: "Piscok Matcha",
-    desc: "Lumeran coklat premium dengan balutan teh hijau khas Jepang (Matcha) yang wangi dan creamy.",
-    img: "/rasa-piscok/piscok-matcha.webp",
-    bg: "#c2d8b9",
+    id: "coklat",
+    name: "Piscok Coklat",
+    desc: "Lumeran coklat premium yang melimpah, rasa klasik yang nggak pernah salah buat pecandu coklat.",
+    img: "/rasa-piscok/rasa-coklat.webp",
+    bg: "#4a2c2a",
     target: "piscok",
   },
   {
@@ -87,19 +87,19 @@ export default function Navbar() {
         <div className="w-full bg-[#1b2b5b] text-white text-xs md:text-sm font-bold tracking-wide py-2 overflow-hidden relative transition-all duration-300">
           <div className="animate-marquee whitespace-nowrap flex items-center">
             <span className="mx-8">
-              PROMO TERBATAS: HARGA SPESIAL HANYA 10RB | CEPAT SEGERA BELI
+              PROMO TERBATAS: PISCOK 10RB & SAMYANG 12RB (ISI 3 PCS) | GAS BELI
               SEBELUM KEHABISAN!
             </span>
             <span className="mx-8">
-              PROMO TERBATAS: HARGA SPESIAL HANYA 10RB | CEPAT SEGERA BELI
+              PROMO TERBATAS: PISCOK 10RB & SAMYANG 12RB (ISI 3 PCS) | GAS BELI
               SEBELUM KEHABISAN!
             </span>
             <span className="mx-8">
-              PROMO TERBATAS: HARGA SPESIAL HANYA 10RB | CEPAT SEGERA BELI
+              PROMO TERBATAS: PISCOK 10RB & SAMYANG 12RB (ISI 3 PCS) | GAS BELI
               SEBELUM KEHABISAN!
             </span>
             <span className="mx-8">
-              PROMO TERBATAS: HARGA SPESIAL HANYA 10RB | CEPAT SEGERA BELI
+              PROMO TERBATAS: PISCOK 10RB & SAMYANG 12RB (ISI 3 PCS) | GAS BELI
               SEBELUM KEHABISAN!
             </span>
           </div>
@@ -206,7 +206,7 @@ export default function Navbar() {
                           src={hoveredProduct.img}
                           alt={hoveredProduct.name}
                           fill
-                          className="object-contain"
+                          className="object-contain rounded-2xl"
                           key={hoveredProduct.id} // Forces re-render animation on image swap
                         />
                       </div>
