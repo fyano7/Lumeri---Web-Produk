@@ -45,12 +45,14 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 // Piscok: 10k for 3, then +3k per extra piece
 // Samyang: 12k for 3, then +4k per extra piece
 export const getItemPriceTotal = (item: CartItem) => {
-  const isSamyang = item.id.includes("samyang");
-  const basePrice = isSamyang ? 12000 : 10000;
+  const itemName = String(item.name || "").toLowerCase();
+  const isSamyang = itemName.includes("samyang") || String(item.id || "").toLowerCase().includes("samyang");
+
+  const basePriceFromVariant = item.priceNumber || (isSamyang ? 12000 : 10000);
   const extraPrice = isSamyang ? 4000 : 3000;
 
-  if (item.quantity <= 3) return basePrice;
-  return basePrice + (item.quantity - 3) * extraPrice;
+  if (item.quantity <= 3) return basePriceFromVariant;
+  return basePriceFromVariant + (item.quantity - 3) * extraPrice;
 };
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
@@ -110,18 +112,39 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
         );
       }
 
-      // Parse price "Rp 10.000 (3 pcs)" safely.
-      const priceString = product.price.split(" ")[1] || "0";
-      const priceNumber = parseInt(priceString.replace(/\./g, ""));
+      // Parse price safely; support both string and number source.
+      const rawPrice = product.price ?? product.priceNumber ?? "0";
+      const parsedPrice =
+        typeof rawPrice === "number"
+          ? rawPrice
+          : typeof rawPrice === "string"
+          ? Number(rawPrice.replace(/[^0-9]/g, "")) || 0
+          : 0;
+
+      const productName = String(product.name || "").toLowerCase();
+      const fallbackBase = productName.includes("samyang") ? 12000 : 10000;
+      const priceNumber = parsedPrice || fallbackBase;
+
+      const imageSrc =
+        product.displayImg ||
+        product.image_url ||
+        product.img ||
+        product.image ||
+        "/placeholder-piscok.png";
+
+      const formattedPrice =
+        typeof product.price === "string"
+          ? product.price
+          : `Rp ${priceNumber.toLocaleString("id-ID")}`;
 
       return [
         ...prev,
         {
           id: product.id,
           name: product.name,
-          price: product.price,
-          priceNumber: priceNumber,
-          img: product.img,
+          price: formattedPrice,
+          priceNumber,
+          img: imageSrc,
           quantity: initialQuantity || 3,
         },
       ];

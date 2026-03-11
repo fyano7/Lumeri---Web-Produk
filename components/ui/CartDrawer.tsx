@@ -119,13 +119,19 @@ export default function CartDrawer() {
                 className="group relative flex gap-4 p-4 rounded-[2rem] bg-gray-50/50 border border-transparent hover:border-black/5 hover:bg-white hover:shadow-xl transition-all duration-300"
               >
                 <div className="w-20 h-20 bg-white rounded-2xl p-2 shadow-sm shrink-0 border border-black/5 flex items-center justify-center">
-                  <Image
-                    src={item.img}
-                    alt={item.name}
-                    width={60}
-                    height={60}
-                    className="object-contain rounded-xl"
-                  />
+                  {item.img ? (
+                    <Image
+                      src={item.img}
+                      alt={item.name}
+                      width={60}
+                      height={60}
+                      className="object-contain rounded-xl"
+                    />
+                  ) : (
+                    <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
+                      <ShoppingBag className="w-6 h-6 text-gray-400" />
+                    </div>
+                  )}
                 </div>
                 <div className="flex-1 flex flex-col justify-between">
                   <div>

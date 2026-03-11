@@ -19,13 +19,171 @@ import {
   Plus,
 } from "lucide-react";
 import { useCart } from "@/context/CartContext";
+import { supabase } from "@/lib/supabase";
 
 export default function ProductDetailPage() {
   const { id } = useParams();
   const router = useRouter();
   const { addToCart, isCartOpen } = useCart();
   const [quantity, setQuantity] = React.useState(3);
-  const product = PRODUCTS.find((p) => p.id === id);
+  const [dbProduct, setDbProduct] = React.useState<any | null>(null);
+  const [loading, setLoading] = React.useState(true);
+  const [fetchError, setFetchError] = React.useState<string | null>(null);
+
+  const normalizedId = String(id || "").toLowerCase();
+
+  const findStaticProductByCandidate = (candidate: any) => {
+    if (!candidate) return null;
+
+    const targetId = String(candidate.id || "").toLowerCase();
+    const targetSlug = String(candidate.slug || "").toLowerCase();
+    const targetName = String(candidate.name || "").toLowerCase();
+
+    return PRODUCTS.find((p) => {
+      const lowId = String(p.id || "").toLowerCase();
+      const lowSlug = String((p as any).slug || "").toLowerCase();
+      const lowName = String(p.name || "").toLowerCase();
+
+      return (
+        (targetId && lowId === targetId) ||
+        (targetSlug && lowSlug === targetSlug) ||
+        (targetName && lowName === targetName)
+      );
+    });
+  };
+
+  const staticProduct = React.useMemo(() => {
+    // Pastikan urutan strict: ID > slug > nama.
+    const idSearch = findStaticProductByCandidate({ id: normalizedId });
+    if (idSearch) return idSearch;
+
+    const slugSearch = findStaticProductByCandidate({ slug: normalizedId });
+    if (slugSearch) return slugSearch;
+
+    const nameSearch = findStaticProductByCandidate({ name: normalizedId });
+    if (nameSearch) return nameSearch;
+
+    if (dbProduct) {
+      const dbId = findStaticProductByCandidate({ id: dbProduct.id });
+      if (dbId) return dbId;
+
+      const dbSlug = findStaticProductByCandidate({ slug: dbProduct.slug });
+      if (dbSlug) return dbSlug;
+
+      const dbName = findStaticProductByCandidate({ name: dbProduct.name });
+      if (dbName) return dbName;
+    }
+
+    return null;
+  }, [dbProduct, normalizedId]);
+
+  React.useEffect(() => {
+    if (!normalizedId) return;
+
+    const fetchProduct = async () => {
+      setLoading(true);
+      setFetchError(null);
+
+      try {
+        let { data, error } = await supabase
+          .from("products")
+          .select("*")
+          .eq("id", id)
+          .single();
+
+        if (error) {
+          const maybeSlug = await supabase
+            .from("products")
+            .select("*")
+            .eq("slug", id)
+            .single();
+
+          if (maybeSlug.error) {
+            if (maybeSlug.status === 406 || maybeSlug.error.message === "Not found") {
+              data = null;
+            } else {
+              throw maybeSlug.error;
+            }
+          } else {
+            data = maybeSlug.data;
+          }
+        }
+
+        if (!data) {
+          data = null;
+        }
+
+        setDbProduct(data || null);
+      } catch (err: any) {
+        setFetchError(err?.message ?? "Gagal memuat data produk");
+        setDbProduct(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProduct();
+  }, [id, normalizedId]);
+
+  if (!staticProduct && !dbProduct && !loading) {
+    return (
+      <div className="min-h-screen bg-white flex flex-col items-center justify-center p-6 text-center">
+        <h1 className="text-4xl font-black mb-4">Produk Tidak Ditemukan</h1>
+        <Link href="/products" className="text-[#e75a40] font-bold underline">
+          Kembali ke Daftar Produk
+        </Link>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <p className="text-lg font-semibold">Memuat produk...</p>
+      </div>
+    );
+  }
+
+  const mergedProduct = {
+    ...staticProduct,
+    ...(dbProduct || {}),
+    img:
+      dbProduct?.image_url ||
+      dbProduct?.img ||
+      dbProduct?.image ||
+      staticProduct?.img ||
+      "/rasa-piscok/rasa-coklat.webp",
+    bg: dbProduct?.bg || staticProduct?.bg || "#e75a40",
+    name: dbProduct?.name || staticProduct?.name || "Produk Lumeria",
+    description:
+      dbProduct?.description ||
+      dbProduct?.longDesc ||
+      staticProduct?.desc ||
+      staticProduct?.longDesc ||
+      "Deskripsi produk tidak tersedia",
+    price: dbProduct?.price || staticProduct?.price || "0",
+    category: dbProduct?.category || staticProduct?.category || "",
+    nutrition:
+      staticProduct?.nutrition ||
+      dbProduct?.nutrition ||
+      { calories: "-", carbs: "-", fat: "-", protein: "-" },
+    ingredients: staticProduct?.ingredients || dbProduct?.ingredients || [],
+    benefits: staticProduct?.benefits || dbProduct?.benefits || "",
+  } as any;
+
+  if (fetchError) {
+    return (
+      <div className="min-h-screen bg-white flex flex-col items-center justify-center p-6 text-center">
+        <h1 className="text-3xl font-bold mb-3">Kesalahan memuat produk</h1>
+        <p className="mb-4 text-red-500">{fetchError}</p>
+        <Link href="/products" className="text-[#e75a40] font-bold underline">
+          Kembali ke Daftar Produk
+        </Link>
+      </div>
+    );
+  }
+
+  const product = mergedProduct;
 
   if (!product) {
     return (
@@ -117,16 +275,26 @@ export default function ProductDetailPage() {
                 {product.name}
               </h1>
               <p className="text-2xl md:text-3xl font-black text-[#e75a40] mb-6 md:mb-8">
-                {product.price}
+                {typeof product.price === "number"
+                  ? new Intl.NumberFormat("id-ID", {
+                      style: "currency",
+                      currency: "IDR",
+                      minimumFractionDigits: 0,
+                    }).format(product.price)
+                  : new Intl.NumberFormat("id-ID", {
+                      style: "currency",
+                      currency: "IDR",
+                      minimumFractionDigits: 0,
+                    }).format(Number(String(product.price).replace(/[\D]/g, "")))}
               </p>
               <p className="text-gray-500 font-medium text-base md:text-lg leading-relaxed mb-8 md:mb-10">
-                {product.longDesc}
+                {product.description}
               </p>
             </div>
 
             {/* Stats / Nutrition Grid */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-              {Object.entries(product.nutrition).map(([key, value]) => (
+              {Object.entries(product.nutrition || {}).map(([key, value]) => (
                 <div
                   key={key}
                   className="bg-gray-50 p-4 rounded-2xl border border-gray-100 flex flex-col items-center text-center"

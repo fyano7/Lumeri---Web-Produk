@@ -29,6 +29,7 @@ import Navbar from "@/components/ui/Navbar";
 import Footer from "@/components/ui/Footer";
 import { PRODUCTS } from "@/constants/products";
 import { useCart } from "@/context/CartContext";
+import { supabase } from "@/lib/supabase";
 
 const DAYS = [
   { id: "Senin", label: "Senin" },
@@ -53,11 +54,21 @@ export default function OrderPage() {
   const { id } = useParams();
   const router = useRouter();
   const { items, history, totalPrice, clearCart, addToHistory } = useCart();
+  const [dbDirectProduct, setDbDirectProduct] = useState<any | null>(null);
 
   // Determine checkout mode: single product or entire cart
   const isDirectCheckout = id !== "all";
+
+  const staticDirectProduct = isDirectCheckout
+    ? PRODUCTS.find((p) =>
+        String(p.id || "").toLowerCase() === String(id || "").toLowerCase() ||
+        String((p as any).slug || "").toLowerCase() === String(id || "").toLowerCase() ||
+        String(p.name || "").toLowerCase() === String(id || "").toLowerCase(),
+      )
+    : null;
+
   const directProduct = isDirectCheckout
-    ? PRODUCTS.find((p) => p.id === id)
+    ? dbDirectProduct || staticDirectProduct
     : null;
 
   // Items to be checked out
@@ -68,19 +79,30 @@ export default function OrderPage() {
             id: directProduct.id,
             name: directProduct.name,
             price: directProduct.price,
-            priceNumber: parseInt(
-              directProduct.price.split(" ")[1].replace(/\./g, ""),
+            priceNumber: Number(
+              directProduct.price
+                ? String(directProduct.price)
+                    .replace(/[^0-9]/g, "")
+                : 0,
             ),
-            img: directProduct.img,
+            img: directProduct.image_url || directProduct.img || directProduct.image,
             quantity: 1,
           },
         ]
       : items;
 
-  const orderTotal =
-    isDirectCheckout && directProduct
-      ? parseInt(directProduct.price.split(" ")[1].replace(/\./g, ""))
-      : totalPrice;
+  const orderTotal = (() => {
+    if (isDirectCheckout && directProduct) {
+      const priceValue = directProduct.price;
+      if (typeof priceValue === "number") return priceValue;
+      if (typeof priceValue === "string") {
+        const cleaned = priceValue.replace(/[^0-9]/g, "");
+        return Number(cleaned) || 0;
+      }
+      return 0;
+    }
+    return totalPrice;
+  })();
 
   const [step, setStep] = useState<"form" | "receipt">("form");
   const [formData, setFormData] = useState({
@@ -128,12 +150,54 @@ export default function OrderPage() {
     }
   }, []);
 
+  // Ambil data produk dari DB kalau direct checkout
+  useEffect(() => {
+    if (isDirectCheckout && id) {
+      const fetchDirectProduct = async () => {
+        const { data, error } = await supabase
+          .from("products")
+          .select("*")
+          .eq("id", id)
+          .single();
+
+        if (error) {
+          const { data: slugData, error: slugError } = await supabase
+            .from("products")
+            .select("*")
+            .eq("slug", id)
+            .single();
+
+          if (!slugError && slugData) {
+            setDbDirectProduct(slugData);
+          } else {
+            setDbDirectProduct(null);
+          }
+        } else if (data) {
+          setDbDirectProduct(data);
+        }
+
+        setDirectLoading(false);
+      };
+
+      fetchDirectProduct();
+    } else {
+      setDirectLoading(false);
+    }
+  }, [id, isDirectCheckout]);
+
+  const [directLoading, setDirectLoading] = useState(isDirectCheckout);
+
   // Redirect if no items to checkout
   useEffect(() => {
-    if (!isSubmitting && step === "form" && checkoutItems.length === 0) {
+    if (
+      !isSubmitting &&
+      step === "form" &&
+      checkoutItems.length === 0 &&
+      (!isDirectCheckout || (isDirectCheckout && !directLoading))
+    ) {
       router.push("/products");
     }
-  }, [checkoutItems, router, step, isSubmitting]);
+  }, [checkoutItems, router, step, isSubmitting, isDirectCheckout, directLoading]);
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat("id-ID", {
@@ -231,13 +295,97 @@ Silakan segera konfirmasi pesanan ini.
     // Freeze order data
     setFinalOrderData({ items: checkoutItems, total: orderTotal });
 
-    // Save to history
+    // Save to history (local state)
     addToHistory({
       name: formData.name,
       phone: formData.phone,
       address: `${formData.class} - ${formData.tikum} (${formData.day}, ${formData.time})`,
       notes: `Metode: ${formData.payment}`,
     });
+
+    // Create order di DB explicit (sesuai schema orders)
+    let createdOrderId: string | null = null;
+    try {
+      const orderPayload = {
+        customer_name: formData.name,
+        customer_class: formData.class,
+        customer_phone: formData.phone,
+        payment_method: formData.payment,
+        pickup_point: `${formData.class} - ${formData.tikum}`,
+        total_price: orderTotal,
+        status: "Pending",
+      };
+
+      const { data: orderData, error: orderError } = await supabase
+        .from("orders")
+        .insert(orderPayload)
+        .select("id")
+        .single();
+
+      if (orderError || !orderData) {
+        console.error("Gagal simpan order di DB:", orderError ?? "unknown error", {
+          payload: orderPayload,
+        });
+        setIsSubmitting(false);
+        alert(
+          "Gagal menyimpan pesanan. Cek koneksi Supabase atau rule keamanan tabel orders."
+        );
+        return;
+      }
+
+      createdOrderId = orderData.id;
+    } catch (err) {
+      console.error("Exception simpan order:", err);
+      setIsSubmitting(false);
+      alert("Terjadi kesalahan saat menyimpan pesanan. Coba lagi.");
+      return;
+    }
+
+    if (createdOrderId) {
+      try {
+        // Prepare order_items rows
+        const batchItems = await Promise.all(
+          checkoutItems.map(async (item) => {
+            let productId: string | null = null;
+
+            // If direct checkout uses db data, gunakan id langsung
+            if (isDirectCheckout && dbDirectProduct) {
+              productId = dbDirectProduct.id;
+            } else if (item.id) {
+              // Cari produk di DB dengan id/slug/nama!
+              const itemId = String(item.id);
+              const { data: found } = await supabase
+                .from("products")
+                .select("id")
+                .or(`id.eq.${itemId},slug.eq.${itemId},name.eq.${itemId}`)
+                .limit(1)
+                .single();
+              if (found && found.id) productId = found.id;
+            }
+
+            return {
+              order_id: createdOrderId,
+              product_id: productId,
+              quantity: item.quantity || 1,
+              subtotal: item.priceNumber || Number(item.price.toString().replace(/[^0-9]/g, "")) || 0,
+            };
+          }),
+        );
+
+        // Insert order_items; ignore jika tidak ada product_id, tetapi tetap simpan stok
+        const insertableItems = batchItems.filter((it) => it.product_id);
+        if (insertableItems.length > 0) {
+          const { error: itemsError } = await supabase
+            .from("order_items")
+            .insert(insertableItems);
+          if (itemsError) {
+            console.error("Gagal simpan order_items di DB:", itemsError);
+          }
+        }
+      } catch (err) {
+        console.error("Exception simpan order_items:", err);
+      }
+    }
 
     // Switch to receipt first so it renders and can be captured
     setStep("receipt");

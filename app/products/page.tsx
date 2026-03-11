@@ -1,11 +1,12 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
 import Image from "next/image";
 import Link from "next/link";
 import Navbar from "@/components/ui/Navbar";
 import Footer from "@/components/ui/Footer";
-import { PRODUCTS } from "@/constants/products";
+import { PRODUCTS as STATIC_PRODUCTS } from "@/constants/products";
 import {
   ArrowLeft,
   ArrowRight,
@@ -16,6 +17,108 @@ import { useCart } from "@/context/CartContext";
 
 export default function ProductsPage() {
   const { addToCart } = useCart();
+  const [products, setProducts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [mounted, setMounted] = useState(false); // Untuk fix Hydration Mismatch
+
+  useEffect(() => {
+    setMounted(true);
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        // 1. Ambil data dari tabel 'products' di Supabase
+        const { data, error } = await supabase
+          .from("products")
+          .select("*")
+          .order("created_at", { ascending: false });
+
+        if (error) throw error;
+
+        // 2. Gabungkan data DB dengan data Constant (untuk ambil BG/Image)
+        const mergedProducts = data.map((dbItem: any) => {
+          const lookupKey = String(
+            dbItem?.id || dbItem?.slug || dbItem?.name || "",
+          ).toLowerCase();
+
+          // Cari data visual dari constant berdasarkan id/nama
+          const staticItem = STATIC_PRODUCTS.find((p) => {
+            const candidates = [
+              p.id,
+              (p as any).slug,
+              p.name,
+            ]
+              .filter(Boolean)
+              .map((x) => String(x).toLowerCase());
+
+            // kecocokan exact, termasuk nilai numeric/slug
+            if (candidates.includes(lookupKey)) return true;
+
+            // kecocokan nama sebagian (piscok sang picture)
+            if (
+              dbItem?.name &&
+              typeof dbItem.name === "string" &&
+              p.name &&
+              typeof p.name === "string"
+            ) {
+              const dbName = dbItem.name.toLowerCase();
+              const staticName = p.name.toLowerCase();
+
+              return (
+                staticName.includes(dbName) ||
+                dbName.includes(staticName)
+              );
+            }
+
+            return false;
+          });
+
+          const displayImg =
+            dbItem?.image_url ||
+            dbItem?.img ||
+            dbItem?.image ||
+            staticItem?.img ||
+            "/rasa-piscok/rasa-coklat.webp";
+          const displayBg =
+            dbItem?.bg ||
+            dbItem?.background ||
+            staticItem?.bg ||
+            "#e75a40";
+
+          const routeId =
+            String(dbItem?.id || "").trim() ||
+            String(staticItem?.slug || staticItem?.id || "").trim() ||
+            String(dbItem?.name || "").toLowerCase().trim().replace(/\s+/g, "-").replace(/[^a-z0-9\-]/g, "");
+
+          return {
+            ...staticItem,
+            ...dbItem,
+            displayImg,
+            displayBg,
+            routeId,
+          };
+        });
+
+        setProducts(mergedProducts);
+      } catch (err) {
+        console.error("Error fetching products:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  // Cegah error Hydration (atribut bis_skin_checked dkk)
+  if (!mounted) return null;
+
+  if (loading)
+    return (
+      <div className="flex items-center justify-center min-h-screen font-black text-2xl uppercase tracking-tighter text-[#e75a40] animate-pulse">
+        Lumeria Loading...
+      </div>
+    );
+
   return (
     <div className="min-h-screen bg-[#fdf8f5] font-sans selection:bg-black selection:text-white">
       <Navbar />
@@ -43,24 +146,30 @@ export default function ProductsPage() {
 
         {/* Product Grid */}
         <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-2 gap-4 md:gap-12">
-          {PRODUCTS.map((product) => (
+          {products.map((product) => (
             <Link
               key={product.id}
-              href={`/products/${product.id}`}
+              href={`/products/${product.routeId ?? product.id}`}
               className="group relative bg-white border border-black/5 rounded-2xl md:rounded-[2.5rem] overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-500 flex flex-col md:flex-row"
             >
+              {/* Label di atas (gunakan dari DB jika tersedia) */}
+              <div className="absolute top-3 left-3 z-20 bg-white/90 backdrop-blur-md text-sm md:text-base font-black text-black px-3 py-1 rounded-full border border-black/10 shadow-sm">
+                {product.label || product.name}
+              </div>
+
               {/* Image side */}
               <div
                 className="w-full md:w-2/5 aspect-square relative overflow-hidden transition-colors duration-500"
-                style={{ backgroundColor: `${product.bg}40` }}
+                style={{ backgroundColor: `${product.displayBg}40` }}
               >
                 <div className="absolute inset-0 flex items-center justify-center p-3 md:p-8 transition-transform duration-700 group-hover:scale-110 group-hover:-rotate-3">
                   <Image
-                    src={product.img}
+                    src={product.displayImg}
                     alt={product.name}
                     width={300}
                     height={300}
                     className="object-contain drop-shadow-2xl rounded-2xl"
+                    priority
                   />
                 </div>
                 <div className="absolute top-4 left-4">
@@ -73,17 +182,22 @@ export default function ProductsPage() {
               {/* Content side */}
               <div className="flex-1 p-3 md:p-8 flex flex-col justify-between">
                 <div>
-                  <h2 className="text-base md:text-3xl font-black text-black mb-1 md:mb-3 group-hover:text-[#e75a40] transition-colors line-clamp-1">
+                  <h2 className="text-base md:text-3xl font-black text-black mb-1 md:mb-3 group-hover:text-[#e75a40] transition-colors line-clamp-1 uppercase">
                     {product.name}
                   </h2>
                   <p className="text-gray-500 hidden md:line-clamp-3 text-sm leading-relaxed mb-6 font-medium">
-                    {product.desc}
+                    {product.description || product.desc}
                   </p>
                 </div>
                 <div className="flex items-center justify-between mt-auto pt-2 md:pt-6 border-t border-gray-100">
                   <span className="text-base md:text-2xl font-black text-black">
-                    {product.price}
+                    {new Intl.NumberFormat("id-ID", {
+                      style: "currency",
+                      currency: "IDR",
+                      minimumFractionDigits: 0,
+                    }).format(product.price)}
                   </span>
+
                   <div className="flex items-center gap-2">
                     <button
                       onClick={(e) => {
@@ -119,7 +233,7 @@ export default function ProductsPage() {
             </p>
           </div>
           <a
-            href="https://wa.me/628123456789?text=Halo%20Lumeri%C3%A1,%20saya%20ingin%20memesan%20produknya!"
+            href="https://wa.me/628123456789?text=Halo%20Lumeria,%20saya%20ingin%20memesan%20produknya!"
             target="_blank"
             rel="noopener noreferrer"
             className="relative z-10 bg-white text-[#1b2b5b] px-8 md:px-10 py-4 md:py-5 rounded-full font-black text-lg md:text-xl hover:scale-105 transition-transform flex items-center gap-3"

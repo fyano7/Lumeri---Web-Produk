@@ -1,6 +1,7 @@
 export const PRODUCTS = [
   {
     id: "coklat",
+    slug: "coklat",
     name: "Piscok Coklat Lumer",
     desc: "Lumeran coklat premium yang melimpah, rasa klasik yang nggak pernah salah buat pecandu coklat.",
     longDesc:
@@ -26,6 +27,7 @@ export const PRODUCTS = [
   },
   {
     id: "strawberry",
+    slug: "strawberry",
     name: "Piscok Strawberry",
     desc: "Perpaduan manis asam stroberi seger sama coklat lumer yang bikin nagih bangett!",
     longDesc:
@@ -51,6 +53,7 @@ export const PRODUCTS = [
   },
   {
     id: "tiramisu",
+    slug: "tiramisu",
     name: "Piscok Tiramisu",
     desc: "Rasa kopi yang elegan bercampur coklat, berasa kayak lagi nongkrong di cafe mahal.",
     longDesc:
@@ -76,6 +79,7 @@ export const PRODUCTS = [
   },
   {
     id: "samyang-nori",
+    slug: "samyang-nori",
     name: "Samyang Roll Nori",
     desc: "Gurihnya mi Samyang yang pedas nampol dipadu taburan Nori yang krispi abis.",
     longDesc:
@@ -102,6 +106,7 @@ export const PRODUCTS = [
   },
   {
     id: "samyang-keju",
+    slug: "samyang-keju",
     name: "Samyang Roll Keju",
     desc: "Pedesnya Samyang ketemu gurihnya keju yang lumer banget, perpaduan paling maut!",
     longDesc:
@@ -127,6 +132,7 @@ export const PRODUCTS = [
   },
   {
     id: "piscok-mix",
+    slug: "piscok-mix",
     name: "Piscok Mix Lumer",
     desc: "Bisa pilih semua varian rasa favorit kamu dalam satu porsi. Definisi bahagia itu simpel!",
     longDesc:
@@ -152,6 +158,7 @@ export const PRODUCTS = [
   },
   {
     id: "samyang-mix",
+    slug: "samyang-mix",
     name: "Samyang Mix Roll",
     desc: "Nggak perlu milih! Nikmati perpaduan Samyang Nori dan Keju dalam satu porsi yang mantap.",
     longDesc:
