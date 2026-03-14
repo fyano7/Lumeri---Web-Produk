@@ -201,7 +201,11 @@ export default function Navbar() {
 
                     <div className="relative z-10 flex flex-col items-center text-center">
                       {/* Product Image */}
-                      <div className="w-40 h-40 relative mb-4 transition-transform duration-500 hover:scale-110 hover:-rotate-3 drop-shadow-2xl">
+                      <Link 
+                        href={`/products/${hoveredProduct.id}`}
+                        onClick={() => setIsShopOpen(false)}
+                        className="w-40 h-40 relative mb-4 transition-transform duration-500 hover:scale-110 hover:-rotate-3 drop-shadow-2xl block cursor-pointer"
+                      >
                         <Image
                           src={hoveredProduct.img}
                           alt={hoveredProduct.name}
@@ -209,7 +213,7 @@ export default function Navbar() {
                           className="object-contain rounded-2xl"
                           key={hoveredProduct.id} // Forces re-render animation on image swap
                         />
-                      </div>
+                      </Link>
 
                       {/* Product Data */}
                       <h3 className="text-xl font-extrabold mb-2">

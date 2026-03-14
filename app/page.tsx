@@ -80,7 +80,7 @@ export default function Home() {
         if (error) throw error;
         setDbProducts(data || []);
       } catch (err) {
-        console.error("Gagal tarik data:", err);
+        // console.error("Gagal tarik data:", err instanceof Error ? err.message : err);
       } finally {
         setLoading(false);
       }

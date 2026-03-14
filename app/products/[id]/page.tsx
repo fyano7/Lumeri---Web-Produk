@@ -89,24 +89,16 @@ export default function ProductDetailPage() {
           .from("products")
           .select("*")
           .eq("id", id)
-          .single();
+          .maybeSingle(); // Use maybeSingle to avoid PGRST116
 
         if (error) {
-          const maybeSlug = await supabase
-            .from("products")
-            .select("*")
-            .eq("slug", id)
-            .single();
-
-          if (maybeSlug.error) {
-            if (maybeSlug.status === 406 || maybeSlug.error.message === "Not found") {
-              data = null;
-            } else {
-              throw maybeSlug.error;
-            }
-          } else {
-            data = maybeSlug.data;
-          }
+           // Invalid UUID error code is usually 22P02, we can just treat as not found
+           if (error.code === '22P02') {
+               data = null;
+           } else {
+               console.error("Supabase error fetching product:", error);
+               data = null;
+           }
         }
 
         if (!data) {

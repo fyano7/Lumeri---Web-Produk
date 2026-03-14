@@ -100,7 +100,15 @@ export default function ProductsPage() {
 
         setProducts(mergedProducts);
       } catch (err) {
-        console.error("Error fetching products:", err);
+        // console.error("Error fetching products:", err instanceof Error ? err.message : err);
+        // Fallback to static products if DB fails
+        const fallbackProducts = STATIC_PRODUCTS.map(p => ({
+          ...p,
+          displayImg: (p as any).img || "/rasa-piscok/rasa-coklat.webp",
+          displayBg: (p as any).bg || "#e75a40",
+          routeId: String((p as any).slug || p.id || "").trim() || String(p.name || "").toLowerCase().trim().replace(/\s+/g, "-").replace(/[^a-z0-9\-]/g, "")
+        }));
+        setProducts(fallbackProducts);
       } finally {
         setLoading(false);
       }
