@@ -315,7 +315,7 @@ export default function Navbar() {
 
           <div className="mt-auto pb-12">
             <a
-              href="https://wa.me/628123456789"
+              href="https://wa.me/6281219186721?text=Halo%20min%20Lumeria,%20saya%20ingin%20tanya-tanya%20tentang%20produknya%20dong!"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center justify-center gap-3 w-full py-5 rounded-full bg-[#e75a40] text-white font-black text-xl shadow-2xl"
