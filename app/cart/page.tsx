@@ -25,14 +25,18 @@ export default function CartPage() {
     getItemPrice,
   } = useCart();
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat("id-ID", {
-      style: "currency",
-      currency: "IDR",
-      minimumFractionDigits: 0,
-    })
-      .format(price)
-      .replace("IDR", "Rp");
+  const formatPrice = (price: any) => {
+  const priceStr = String(price);
+  const cleanNumber = Number(priceStr.replace(/[^0-9]/g, ""));
+  const finalNumber = isNaN(cleanNumber) ? 0 : cleanNumber;
+
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    minimumFractionDigits: 0,
+  })
+    .format(finalNumber)
+    .replace("IDR", "Rp");
   };
 
   return (
@@ -88,38 +92,32 @@ export default function CartPage() {
                 {items.map((item) => (
                   <div
                     key={item.id}
-                    className="group bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all flex items-center gap-6"
+                    className="group bg-white p-4 md:p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all flex items-start gap-4 md:gap-6 relative"
                   >
-                    <div className="w-24 h-24 bg-gray-50 rounded-xl p-3 shrink-0 flex items-center justify-center border border-gray-100">
+                    {/* Image Container */}
+                    <div className="w-20 h-20 md:w-28 md:h-28 bg-gray-50 rounded-xl p-2 shrink-0 flex items-center justify-center border border-gray-100 overflow-hidden">
                       <Image
                         src={item.img}
                         alt={item.name}
-                        width={60}
-                        height={60}
-                        className="object-contain group-hover:scale-110 transition-transform duration-500"
+                        width={100}
+                        height={100}
+                        className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-500 rounded-lg"
                       />
                     </div>
 
-                    <div className="flex-1 min-w-0">
-                      <div className="flex justify-between items-start mb-2">
-                        <div>
-                          <h3 className="text-lg font-black text-black uppercase tracking-tight truncate">
-                            {item.name}
-                          </h3>
-                          <p className="text-sm font-bold text-[#e75a40]">
-                            {item.price}
-                          </p>
-                        </div>
-                        <button
-                          onClick={() => removeFromCart(item.id)}
-                          className="p-2 text-black hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
-                          title="Hapus"
-                        >
-                          <Trash2 className="w-5 h-5" strokeWidth={2.5} />
-                        </button>
+                    {/* Info & Controls */}
+                    <div className="flex-1 flex flex-col min-w-0 pr-10">
+                      <div className="mb-4">
+                        <h3 className="text-base md:text-lg font-black text-black uppercase tracking-tight truncate leading-tight">
+                          {item.name}
+                        </h3>
+                        <p className="text-sm font-bold text-[#e75a40] mt-1">
+                          {formatPrice(item.price)}
+                        </p>
                       </div>
 
-                      <div className="flex items-center justify-between mt-4">
+                      <div className="flex items-center justify-between mt-auto gap-4">
+                        {/* Quantity Controls */}
                         <div className="flex items-center bg-gray-50 rounded-xl p-1 border border-gray-100">
                           <button
                             onClick={() =>
@@ -127,9 +125,9 @@ export default function CartPage() {
                             }
                             className="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center transition-colors text-black"
                           >
-                            <Minus className="w-4 h-4" strokeWidth={3} />
+                            <Minus className="w-3.5 h-3.5" strokeWidth={3} />
                           </button>
-                          <span className="w-10 text-center text-sm font-black text-black">
+                          <span className="w-8 text-center text-sm font-black text-black">
                             {item.quantity}
                           </span>
                           <button
@@ -138,16 +136,27 @@ export default function CartPage() {
                             }
                             className="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center transition-colors text-black"
                           >
-                            <Plus className="w-4 h-4" strokeWidth={3} />
+                            <Plus className="w-3.5 h-3.5" strokeWidth={3} />
                           </button>
                         </div>
-                        <div className="text-right">
-                          <span className="text-base font-black text-black italic">
+
+                        {/* Subtotal Item */}
+                        <div className="text-right whitespace-nowrap">
+                          <span className="text-sm md:text-base font-black text-black italic">
                             {formatPrice(getItemPrice(item))}
                           </span>
                         </div>
                       </div>
                     </div>
+
+                    {/* Delete Button - Absolute Positioned */}
+                    <button
+                      onClick={() => removeFromCart(item.id)}
+                      className="absolute top-4 right-4 p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
+                      title="Hapus"
+                    >
+                      <Trash2 className="w-5 h-5" strokeWidth={2} />
+                    </button>
                   </div>
                 ))}
 

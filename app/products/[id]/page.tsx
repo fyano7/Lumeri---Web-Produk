@@ -382,14 +382,11 @@ export default function ProductDetailPage() {
 
                 <button
                   onClick={() => addToCart(product, quantity)}
-                  className="flex-1 h-16 bg-white border-2 border-black/5 text-black rounded-full font-black text-lg hover:scale-[1.02] transition-transform flex items-center justify-center gap-3 shadow-md"
+                  className="flex-1 h-16 bg-white border-2 border-black/5 text-black rounded-full font-black text-lg hover:scale-[1.02] transition-transform flex items-center justify-center gap-3 shadow-md px-4 overflow-hidden"
                 >
-                  <ShoppingBag className="w-6 h-6" />
-                  Masukan Keranjang
-                </button>
-
-                <button className="w-16 h-16 border-2 border-gray-100 rounded-full flex items-center justify-center hover:bg-gray-50 transition-colors">
-                  <Heart className="w-6 h-6 text-gray-400" />
+                  <ShoppingBag className="w-6 h-6 shrink-0" />{" "}
+                  {/* shrink-0 supaya icon gak gepeng */}
+                  <span className="truncate">Masukan Keranjang</span>
                 </button>
               </div>
             </div>
@@ -417,30 +414,25 @@ export default function ProductDetailPage() {
 
       {/* Shopee-style Mobile Sticky Bottom Bar */}
       <div
-        className={`md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-xl border-t border-black/5 px-6 py-4 flex items-center gap-3 shadow-[0_-15px_30px_rgba(0,0,0,0.08)] transition-transform duration-300 ${isCartOpen ? "translate-y-full" : "translate-y-0"}`}
+        className={`md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-xl border-t border-black/5 px-4 py-4 flex items-center gap-2 shadow-[0_-15px_30px_rgba(0,0,0,0.08)] transition-transform duration-300 ${isCartOpen ? "translate-y-full" : "translate-y-0"}`}
       >
-        {/* Primary Actions (Buttons) */}
-        <div className="flex-[4] flex gap-2">
+        <div className="flex-[5] flex gap-2">
           <Link
             href={`/products/${id}/order`}
-            className="flex-1 h-12 bg-[#e75a40] text-white rounded-full font-black text-[10px] uppercase tracking-tight flex items-center justify-center active:scale-95 transition-transform shadow-lg shadow-[#e75a40]/20 gap-1.5"
+            className="flex-1 h-12 bg-[#e75a40] text-white rounded-full font-black text-[9px] uppercase tracking-tighter flex items-center justify-center active:scale-95 transition-transform shadow-lg shadow-[#e75a40]/20 gap-1 px-2"
           >
-            <MessageCircle className="w-3.5 h-3.5" />
-            Pesan Sekarang
+            <MessageCircle className="w-4 h-4 shrink-0" />
+            <span>Pesan</span>
           </Link>
+
           <button
             onClick={() => addToCart(product, quantity)}
-            className="flex-1 h-12 bg-white border-2 border-black/5 text-black rounded-full font-black text-[10px] uppercase tracking-tight flex items-center justify-center active:scale-95 transition-transform gap-1.5 shadow-sm"
+            className="flex-1 h-12 bg-white border-2 border-black/5 text-black rounded-full font-black text-[9px] uppercase tracking-tighter flex items-center justify-center active:scale-95 transition-transform gap-1 px-2 shadow-sm"
           >
-            <ShoppingBag className="w-3.5 h-3.5" />
-            Masukan Keranjang
+            <ShoppingBag className="w-4 h-4 shrink-0" />
+            <span>Keranjang</span>
           </button>
         </div>
-
-        {/* Heart Icon Circle */}
-        <button className="w-12 h-12 rounded-full border-2 border-gray-50 flex items-center justify-center shadow-sm text-gray-400 active:scale-95 transition-all">
-          <Heart className="w-5 h-5" />
-        </button>
       </div>
     </div>
   );
