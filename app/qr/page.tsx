@@ -6,7 +6,7 @@ import Link from "next/link";
 
 export default function QRPage() {
   const [qrUrl, setQrUrl] = useState("");
-  const [url, setUrl] = useState("http://192.168.1.12:3000");
+  const [url, setUrl] = useState("https://lumeria.vercel.app/");
 
   useEffect(() => {
     QRCode.toDataURL(url, {
