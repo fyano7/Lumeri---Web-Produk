@@ -38,7 +38,7 @@ export default function AboutPage() {
       }
     }
     fetchMembers();
-  }, []); // Kosongkan dependency agar hanya jalan sekali
+  }, []); 
 
   // 2. useEffect KHUSUS untuk Animasi GSAP
   useEffect(() => {

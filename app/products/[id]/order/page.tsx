@@ -430,6 +430,39 @@ Silakan segera konfirmasi pesanan ini.
     return null; // Will redirect via useEffect
   }
 
+
+  const calculateItemTotal = (item: any) => {
+    const qty = item.quantity;
+
+    // Piscok: 3 pcs = 10k, +3k / pcs
+    if (item.name.toLowerCase().includes("piscok")) {
+      const baseQty = 3;
+      const basePrice = 10000;
+      const extraPrice = 3000;
+
+      if (qty <= baseQty) return basePrice;
+      return basePrice + (qty - baseQty) * extraPrice;
+    }
+
+    // Samyang: 3 pcs = 12k, +4k / pcs
+    if (item.name.toLowerCase().includes("samyang")) {
+      const baseQty = 3;
+      const basePrice = 12000;
+      const extraPrice = 4000;
+
+      if (qty <= baseQty) return basePrice;
+      return basePrice + (qty - baseQty) * extraPrice;
+    }
+
+    // fallback
+    return item.priceNumber * qty;
+  };
+
+   const realTotal = displayItems.reduce(
+     (acc, item) => acc + calculateItemTotal(item),
+     0,
+   );
+
   return (
     <div className="min-h-screen bg-[#fdf8f5] font-sans selection:bg-black selection:text-white overflow-hidden">
       <Navbar />
@@ -452,7 +485,7 @@ Silakan segera konfirmasi pesanan ini.
               </h1>
               <div className="bg-white/50 backdrop-blur-sm px-4 py-2 rounded-2xl border border-black/5 flex items-center gap-3">
                 <div className="flex -space-x-4">
-                  {displayItems.slice(0, 3).map((item, idx) => (
+                  {displayItems.map((item, idx) => (
                     <div
                       key={item.id}
                       className="w-10 h-10 rounded-xl bg-white p-1 shadow-sm border border-black/5 relative overflow-hidden"
@@ -478,7 +511,7 @@ Silakan segera konfirmasi pesanan ini.
                     {displayItems.length} Item Terpilih
                   </p>
                   <p className="text-sm font-black text-black">
-                    {formatPrice(displayTotal)}
+                    {formatPrice(realTotal)}
                   </p>
                 </div>
               </div>
@@ -839,7 +872,7 @@ Silakan segera konfirmasi pesanan ini.
                       </div>
                       <div className="text-right">
                         <p className="text-sm font-black text-black">
-                          {formatPrice(displayTotal)}
+                          {formatPrice(calculateItemTotal(item))}
                         </p>
                       </div>
                     </div>
@@ -852,7 +885,7 @@ Silakan segera konfirmasi pesanan ini.
                         Subtotal Produk
                       </span>
                       <span className="text-black font-black">
-                        {formatPrice(displayTotal)}
+                        {formatPrice(realTotal)}
                       </span>
                     </div>
                     <div className="flex justify-between items-center text-xs">
@@ -877,7 +910,7 @@ Silakan segera konfirmasi pesanan ini.
                       Total Bayar
                     </span>
                     <span className="text-2xl font-black text-[#e75a40]">
-                      {formatPrice(displayTotal)}
+                      {formatPrice(realTotal)}
                     </span>
                   </div>
                 </div>
@@ -937,13 +970,6 @@ Silakan segera konfirmasi pesanan ini.
                 Hubungi Kami (Chat WhatsApp)
               </a>
             </div>
-
-            <button
-              onClick={() => setStep("form")}
-              className="w-full mt-10 text-gray-400 font-bold hover:text-black transition-colors flex items-center justify-center gap-2 py-4"
-            >
-              Ubah Data Pesanan
-            </button>
           </div>
         )}
       </main>
