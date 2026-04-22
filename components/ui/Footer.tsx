@@ -1,10 +1,11 @@
 import { MessageCircle } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link"; // 1. Import Link di sini
 
 export default function Footer() {
   return (
     <div className="relative w-full z-40 bg-[#2a1306] pt-12">
-      {/* Curved SVG Top Border */}
+      {/* Curved SVG Tetap Sama... */}
       <svg
         className="absolute top-0 left-0 w-full -translate-y-[99%] text-[#2a1306]"
         viewBox="0 0 1440 120"
@@ -34,27 +35,30 @@ export default function Footer() {
               />
             </div>
             <p className="text-[#fdf8f5]/70 font-medium leading-relaxed">
-              Ngasih level baru buat jajanan kaki lima khas Indonesia pake bahan
-              premium dan rasa yang bener-bener nagih.
+              Nagasih level baru buat jajanan kaki lima khas Indonesia pake
+              bahan premium dan rasa yang bener-bener nagih.
             </p>
           </div>
 
           <div className="flex gap-16">
             <div className="flex flex-col gap-4">
               <h4 className="font-bold text-lg mb-2 text-[#e6ccb2]">Menu</h4>
-              <a
-                href="#piscok"
+
+              {/* 2. Ganti <a> jadi <Link> dan arahkan ke /products */}
+              <Link
+                href="/products"
                 className="text-[#fdf8f5]/70 hover:text-white transition-colors"
               >
                 Piscok Premium
-              </a>
-              <a
-                href="#samyang"
+              </Link>
+              <Link
+                href="/products"
                 className="text-[#fdf8f5]/70 hover:text-white transition-colors"
               >
                 Samyang Roll
-              </a>
+              </Link>
             </div>
+
             <div className="flex flex-col gap-4">
               <h4 className="font-bold text-lg mb-2 text-[#e6ccb2]">
                 Hubungi Kami
