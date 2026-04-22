@@ -13,6 +13,7 @@ import {
   MessageCircle,
   ShoppingBag,
   History,
+  Home
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -136,6 +137,14 @@ export default function Navbar() {
           {/* Center Links */}
           <div className="hidden lg:flex items-center gap-2 font-semibold text-sm text-black">
             <Link
+              href="/"
+              className="flex items-center gap-1.5 px-6 py-2.5 rounded-full bg-white hover:bg-gray-50 transition-all shadow-sm border border-black/5 font-bold hover:scale-105 active:scale-95"
+            >
+              <Home className="w-4 h-4 text-[#e75a40]" />
+              Beranda
+            </Link>
+
+            <Link
               href="/products"
               className="group relative flex items-center gap-2 px-8 py-3 rounded-full bg-gradient-to-r from-[#e75a40] to-[#ff8a75] text-white font-extrabold shadow-[0_10px_20px_-5px_rgba(231,90,64,0.4)] hover:shadow-[0_15px_25px_-5px_rgba(231,90,64,0.5)] transition-all duration-300 hover:scale-105 active:scale-95 overflow-hidden border border-white/20"
             >
@@ -229,7 +238,7 @@ export default function Navbar() {
               )}
             </Link>
             <a
-              href="https://wa.me/6281219186721"
+              href="https://wa.me/6281219186721?text=Halo%20min%20Lumeria,%20saya%20ingin%20tanya-tanya%20tentang%20produknya%20dong!"
               target="_blank"
               rel="noopener noreferrer"
               className="w-10 h-10 rounded-full bg-[#e75a40] text-white shadow-xl flex items-center justify-center transition-all hover:scale-110 active:scale-95 hover:bg-[#d4482e]"
@@ -286,7 +295,7 @@ export default function Navbar() {
               onClick={() => setIsMobileMenuOpen(false)}
               className={`text-4xl font-black uppercase tracking-tighter ${pathname.startsWith("/products") ? "text-[#e75a40]" : "text-black"}`}
             >
-              Shop
+              Menu
             </Link>
             <Link
               href="/history"
