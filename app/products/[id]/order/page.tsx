@@ -862,16 +862,20 @@ Silakan segera konfirmasi pesanan ini.
                           className="object-contain"
                         />
                       </div>
-                      <div className="flex-1">
-                        <h4 className="font-black text-black leading-tight uppercase text-sm">
+
+                      {/* TEXT */}
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-black text-black uppercase text-sm truncate">
                           {item.name}
                         </h4>
                         <p className="text-[11px] font-bold text-[#e75a40]">
                           Qty: {item.quantity} Unit
                         </p>
                       </div>
-                      <div className="text-right">
-                        <p className="text-sm font-black text-black">
+
+                      {/* PRICE */}
+                      <div className="text-right shrink-0">
+                        <p className="text-sm font-black text-black whitespace-nowrap">
                           {formatPrice(calculateItemTotal(item))}
                         </p>
                       </div>
