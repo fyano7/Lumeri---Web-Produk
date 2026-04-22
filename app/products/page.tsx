@@ -198,7 +198,7 @@ export default function ProductsPage() {
                   </p>
                 </div>
                 <div className="flex items-center justify-between mt-auto pt-2 md:pt-6 border-t border-gray-100">
-                  <span className="text-base md:text-2xl font-black text-black">
+                  <span className="text-xs md:text-2xl font-black text-black">
                     {new Intl.NumberFormat("id-ID", {
                       style: "currency",
                       currency: "IDR",
@@ -213,13 +213,10 @@ export default function ProductsPage() {
                         e.stopPropagation();
                         addToCart(product);
                       }}
-                      className="w-7 h-7 md:w-12 md:h-12 bg-white border border-black/5 text-black rounded-full flex items-center justify-center transition-all hover:scale-110 hover:bg-gray-50 shadow-sm"
+                      className="w-7 h-7 bg-white border border-black/5 text-black rounded-full flex items-center justify-center transition-all hover:scale-110 hover:bg-gray-50 shadow-sm"
                     >
-                      <ShoppingBag className="w-3.5 h-3.5 md:w-5 md:h-5" />
+                      <ShoppingBag className="w-4 h-4" />
                     </button>
-                    <div className="w-7 h-7 md:w-12 md:h-12 bg-black text-white rounded-full flex items-center justify-center transition-transform group-hover:scale-110 group-hover:bg-[#e75a40]">
-                      <ArrowRight className="w-3.5 h-3.5 md:w-5 md:h-5" />
-                    </div>
                   </div>
                 </div>
               </div>
@@ -241,7 +238,7 @@ export default function ProductsPage() {
             </p>
           </div>
           <a
-            href="https://wa.me/628123456789?text=Halo%20Lumeria,%20saya%20ingin%20memesan%20produknya!"
+            href="https://wa.me/6281219186721?text=Halo%20Lumeria,%20saya%20ingin%20memesan%20produknya!"
             target="_blank"
             rel="noopener noreferrer"
             className="relative z-10 bg-white text-[#1b2b5b] px-8 md:px-10 py-4 md:py-5 rounded-full font-black text-lg md:text-xl hover:scale-105 transition-transform flex items-center gap-3"

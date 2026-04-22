@@ -277,7 +277,9 @@ export default function ProductDetailPage() {
                       style: "currency",
                       currency: "IDR",
                       minimumFractionDigits: 0,
-                    }).format(Number(String(product.price).replace(/[\D]/g, "")))}
+                    }).format(
+                      Number(String(product.price).replace(/[\D]/g, "")),
+                    )}
               </p>
               <p className="text-gray-500 font-medium text-base md:text-lg leading-relaxed mb-8 md:mb-10">
                 {product.description}
@@ -332,30 +334,42 @@ export default function ProductDetailPage() {
               </div>
             </div>
 
-            {/* Desktop CTA's (Hidden on Mobile) */}
-            <div className="hidden md:flex flex-col gap-6 mb-12">
-              <div className="flex items-center gap-6">
-                <div className="flex items-center bg-gray-50 border-2 border-black/5 rounded-2xl p-2 shadow-sm">
-                  <button
-                    onClick={() => setQuantity(Math.max(3, quantity - 1))}
-                    className="w-12 h-12 rounded-xl hover:bg-white flex items-center justify-center transition-all text-black hover:shadow-md"
-                  >
-                    <Minus className="w-5 h-5" strokeWidth={3} />
-                  </button>
-                  <span className="w-16 text-center text-xl font-black text-black">
-                    {quantity}
-                  </span>
-                  <button
-                    onClick={() => setQuantity(quantity + 1)}
-                    className="w-12 h-12 rounded-xl hover:bg-white flex items-center justify-center transition-all text-black hover:shadow-md"
-                  >
-                    <Plus className="w-5 h-5" strokeWidth={3} />
-                  </button>
-                </div>
-                <div className="text-sm font-bold text-gray-400 uppercase tracking-widest">
-                  Minimal 3 pcs
-                </div>
+            {/* Container luar pakai w-fit supaya nggak melar ke samping */}
+            <div className="flex items-center gap-4 mb-8 w-fit">
+              <div className="flex items-center bg-gray-50 border-2 border-black/5 rounded-2xl p-2 shadow-sm">
+                <button
+                  onClick={() => setQuantity(Math.max(3, quantity - 1))}
+                  className="w-10 h-10 md:w-12 md:h-12 rounded-xl hover:bg-white flex items-center justify-center transition-all text-black active:scale-90"
+                >
+                  <Minus className="w-4 h-4 md:w-5 md:h-5" strokeWidth={3} />
+                </button>
+
+                <span className="w-12 md:w-16 text-center text-lg md:text-xl font-black text-black">
+                  {quantity}
+                </span>
+
+                <button
+                  onClick={() => setQuantity(quantity + 1)}
+                  className="w-10 h-10 md:w-12 md:h-12 rounded-xl hover:bg-white flex items-center justify-center transition-all text-black active:scale-90"
+                >
+                  <Plus className="w-4 h-4 md:w-5 md:h-5" strokeWidth={3} />
+                </button>
               </div>
+
+              {/* Keterangan minimal order di sebelah kanan kotak */}
+              <div className="flex flex-col">
+                <span className="text-[10px] md:text-xs font-black text-gray-400 uppercase tracking-widest">
+                  Minimal
+                </span>
+                <span className="text-[10px] md:text-xs font-black text-gray-400 uppercase tracking-widest">
+                  3 Pcs
+                </span>
+              </div>
+            </div>
+
+            {/* Bagian ini HANYA muncul di Desktop (md: ke atas) */}
+            <div className="hidden md:flex flex-col gap-6 mb-12">
+              {/* Kita hapus selector quantity di sini karena sudah ada di atasnya */}
 
               <div className="flex flex-row gap-4">
                 <Link
@@ -365,6 +379,7 @@ export default function ProductDetailPage() {
                   <MessageCircle className="w-6 h-6" />
                   Pesan Sekarang
                 </Link>
+
                 <button
                   onClick={() => addToCart(product, quantity)}
                   className="flex-1 h-16 bg-white border-2 border-black/5 text-black rounded-full font-black text-lg hover:scale-[1.02] transition-transform flex items-center justify-center gap-3 shadow-md"
@@ -372,6 +387,7 @@ export default function ProductDetailPage() {
                   <ShoppingBag className="w-6 h-6" />
                   Masukan Keranjang
                 </button>
+
                 <button className="w-16 h-16 border-2 border-gray-100 rounded-full flex items-center justify-center hover:bg-gray-50 transition-colors">
                   <Heart className="w-6 h-6 text-gray-400" />
                 </button>

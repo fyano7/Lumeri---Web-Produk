@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import {
   ChevronDown,
   X,
@@ -54,6 +55,7 @@ const SHOP_ITEMS = [
 ];
 
 export default function Navbar() {
+  const pathname = usePathname();
   const [isShopOpen, setIsShopOpen] = useState(false);
   const [isBannerVisible, setIsBannerVisible] = useState(true);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
@@ -133,101 +135,6 @@ export default function Navbar() {
 
           {/* Center Links */}
           <div className="hidden lg:flex items-center gap-2 font-semibold text-sm text-black">
-            {/* Shop Dropdown Trigger */}
-            <div
-              className="relative"
-              onMouseEnter={() => setIsShopOpen(true)}
-              onMouseLeave={() => setIsShopOpen(false)}
-            >
-              <button
-                className={`flex items-center gap-1.5 px-6 py-2.5 rounded-full bg-white hover:bg-gray-50 transition-colors shadow-sm border border-black/5 ${isShopOpen ? "ring-2 ring-black/20" : ""}`}
-              >
-                Shop{" "}
-                <ChevronDown
-                  className={`w-4 h-4 transition-transform duration-300 ${isShopOpen ? "rotate-180" : ""}`}
-                />
-              </button>
-
-              {/* Mega Menu Dropdown */}
-              <div
-                className={`absolute top-full left-1/2 -translate-x-1/2 pt-4 w-[700px] transition-all duration-500 origin-top
-                  ${isShopOpen ? "opacity-100 scale-y-100 pointer-events-auto translate-y-0" : "opacity-0 scale-y-95 pointer-events-none -translate-y-4"}
-                `}
-              >
-                <div className="bg-white rounded-3xl shadow-[0_30px_60px_-15px_rgba(0,0,0,0.15)] border border-black/5 overflow-hidden flex h-[380px]">
-                  {/* Left Column: Product Links */}
-                  <div className="w-1/2 p-6 flex flex-col gap-2 border-r border-gray-100">
-                    <h4 className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-2 px-4">
-                      Lumeri Menu
-                    </h4>
-                    {SHOP_ITEMS.map((item) => (
-                      <Link
-                        key={item.id}
-                        href={`/products/${item.id}`}
-                        onMouseEnter={() => setHoveredProduct(item)}
-                        onClick={() => setIsShopOpen(false)}
-                        className={`px-4 py-3 rounded-xl cursor-pointer transition-all duration-300 flex items-center justify-between group
-                          ${hoveredProduct.id === item.id ? "bg-gray-50" : "hover:bg-gray-50/50"}
-                        `}
-                      >
-                        <span
-                          className={`font-bold transition-colors ${hoveredProduct.id === item.id ? "text-black" : "text-gray-600"}`}
-                        >
-                          {item.name}
-                        </span>
-                        <ArrowRight
-                          className={`w-4 h-4 transition-all duration-300 ${hoveredProduct.id === item.id ? "opacity-100 translate-x-0 text-black" : "opacity-0 -translate-x-2"}`}
-                        />
-                      </Link>
-                    ))}
-
-                    <div className="mt-auto px-4">
-                      <Link
-                        href="/products"
-                        onClick={() => setIsShopOpen(false)}
-                        className="text-sm font-bold text-[#e75a40] hover:text-[#d4482e] transition-colors underline underline-offset-4 decoration-2"
-                      >
-                        View all products
-                      </Link>
-                    </div>
-                  </div>
-
-                  {/* Right Column: Dynamic Hover Data */}
-                  <div className="w-1/2 p-6 relative overflow-hidden bg-gray-50 flex flex-col items-center justify-center">
-                    <div
-                      className="absolute inset-0 transition-colors duration-700 opacity-20"
-                      style={{ backgroundColor: hoveredProduct.bg }}
-                    />
-
-                    <div className="relative z-10 flex flex-col items-center text-center">
-                      {/* Product Image */}
-                      <Link 
-                        href={`/products/${hoveredProduct.id}`}
-                        onClick={() => setIsShopOpen(false)}
-                        className="w-40 h-40 relative mb-4 transition-transform duration-500 hover:scale-110 hover:-rotate-3 drop-shadow-2xl block cursor-pointer"
-                      >
-                        <Image
-                          src={hoveredProduct.img}
-                          alt={hoveredProduct.name}
-                          fill
-                          className="object-contain rounded-2xl"
-                          key={hoveredProduct.id} // Forces re-render animation on image swap
-                        />
-                      </Link>
-
-                      {/* Product Data */}
-                      <h3 className="text-xl font-extrabold mb-2">
-                        {hoveredProduct.name}
-                      </h3>
-                      <p className="text-xs text-gray-600 leading-relaxed max-w-[80%]">
-                        {hoveredProduct.desc}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
             <Link
               href="/products"
               className="group relative flex items-center gap-2 px-8 py-3 rounded-full bg-gradient-to-r from-[#e75a40] to-[#ff8a75] text-white font-extrabold shadow-[0_10px_20px_-5px_rgba(231,90,64,0.4)] hover:shadow-[0_15px_25px_-5px_rgba(231,90,64,0.5)] transition-all duration-300 hover:scale-105 active:scale-95 overflow-hidden border border-white/20"
@@ -274,7 +181,7 @@ export default function Navbar() {
                   {[
                     { label: "Our Story", href: "/about#story" },
                     { label: "Our Mission", href: "/about#mission" },
-                    { label: "Meet the Team", href: "/#creators" },
+                    { label: "Meet the Team", href: "/about#team" },
                   ].map((link, idx) => (
                     <Link
                       key={idx}
@@ -322,7 +229,7 @@ export default function Navbar() {
               )}
             </Link>
             <a
-              href="https://wa.me/628123456789"
+              href="https://wa.me/6281219186721"
               target="_blank"
               rel="noopener noreferrer"
               className="w-10 h-10 rounded-full bg-[#e75a40] text-white shadow-xl flex items-center justify-center transition-all hover:scale-110 active:scale-95 hover:bg-[#d4482e]"
@@ -370,28 +277,28 @@ export default function Navbar() {
             <Link
               href="/"
               onClick={() => setIsMobileMenuOpen(false)}
-              className="text-4xl font-black uppercase tracking-tighter"
+              className={`text-4xl font-black uppercase tracking-tighter ${pathname === "/" ? "text-[#e75a40]" : "text-black"}`}
             >
               Home
             </Link>
             <Link
               href="/products"
               onClick={() => setIsMobileMenuOpen(false)}
-              className="text-4xl font-black uppercase tracking-tighter"
+              className={`text-4xl font-black uppercase tracking-tighter ${pathname.startsWith("/products") ? "text-[#e75a40]" : "text-black"}`}
             >
               Shop
             </Link>
             <Link
               href="/history"
               onClick={() => setIsMobileMenuOpen(false)}
-              className="text-4xl font-black uppercase tracking-tighter"
+              className={`text-4xl font-black uppercase tracking-tighter ${pathname.startsWith("/history") ? "text-[#e75a40]" : "text-black"}`}
             >
               History
             </Link>
             <Link
               href="/about"
               onClick={() => setIsMobileMenuOpen(false)}
-              className="text-4xl font-black uppercase tracking-tighter"
+              className={`text-4xl font-black uppercase tracking-tighter ${pathname.startsWith("/about") ? "text-[#e75a40]" : "text-black"}`}
             >
               About Us
             </Link>

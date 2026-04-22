@@ -60,7 +60,7 @@ export default function Footer() {
                 Hubungi Kami
               </h4>
               <a
-                href="https://wa.me/628123456789"
+                href="https://wa.me/6281219186721?text=Halo%20Lumeria,%20saya%20ingin%20memesan%20produknya!"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-[#fdf8f5]/70 hover:text-white transition-colors flex items-center gap-2"

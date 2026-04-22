@@ -48,9 +48,9 @@ const MEMBERS_DATA = [
   },
   {
     id: 6,
-    name: "Hafis",
+    name: "Hafiz",
     className: "XI RPL 1",
-    role: "Juru resep dan pembeli bahan",
+    role: "Finance & Accounting Officer",
   },
   { id: 7, name: "Farel", className: "XI RPL 1", role: "Back end developer" },
   { id: 8, name: "Faisal", className: "XI RPL 1", role: "Front end developer" },
@@ -88,26 +88,33 @@ export default function Home() {
     fetchProducts();
   }, []);
 
-  // Helper untuk ambil deskripsi dari DB berdasarkan keyword
+  // Helper untuk ambil data lengkap dari DB
   const getProductData = (keyword: string) => {
-    return (
-      dbProducts.find((p) =>
-        p.name?.toLowerCase().includes(keyword.toLowerCase()),
-      ) || { description: "..." }
+    const search = keyword.toLowerCase().trim();
+    const found = dbProducts.find(
+      (p) =>
+        p.label?.toLowerCase().includes(search) ||
+        p.name?.toLowerCase().includes(search) ||
+        p.slug?.toLowerCase() === search,
     );
+    return found || { description: "Sedang memuat deskripsi..." };
   };
 
+  // Helper untuk routing
   const getProductRoute = (keyword: string) => {
+    const search = keyword.toLowerCase().trim();
     const item = dbProducts.find(
       (p) =>
-        String(p.id).toLowerCase() === keyword.toLowerCase() ||
-        String(p.slug || "").toLowerCase() === keyword.toLowerCase() ||
-        p.name?.toLowerCase().includes(keyword.toLowerCase()),
+        p.label?.toLowerCase().includes(search) ||
+        p.name?.toLowerCase().includes(search) ||
+        p.slug?.toLowerCase() === search ||
+        String(p.id) === keyword,
     );
-    if (item) return `/products/${item.slug || item.id}`;
-    return `/products/${keyword}`;
-  };
 
+    if (item) return `/products/${item.slug || item.id}`;
+    // Fallback jika tidak ketemu, arahkan ke slug yang di-format
+    return `/products/${keyword.toLowerCase().replace(/\s+/g, "-")}`;
+  };
 
   useEffect(() => {
     let color = "#ffffff";
@@ -266,7 +273,7 @@ export default function Home() {
               <>
                 {/* Column 1: Coklat Lumer */}
                 <div
-                  onClick={() => router.push(getProductRoute("coklat"))}
+                  onClick={() => router.push(getProductRoute("Coklat"))}
                   className="flex-1 w-full group relative flex flex-col items-center justify-start py-20 bg-[#3d1f1b] transition-all duration-700 cursor-pointer hover:bg-[#2d1714] min-h-[600px] md:min-h-[90vh]"
                 >
                   <h3 className="relative z-20 text-4xl md:text-6xl font-black uppercase text-white mb-10 text-center tracking-tight leading-none">
@@ -277,7 +284,10 @@ export default function Home() {
                   {/* Container Gambar dengan tinggi tetap agar tidak gepeng */}
                   <div className="relative w-[85%] h-[300px] md:h-[400px] z-10 transition-transform duration-700 group-hover:scale-105 rounded-[3rem] overflow-hidden shadow-2xl border-4 border-white/10">
                     <Image
-                      src={getProductData("coklat").img || "/rasa-piscok/rasa-coklat.webp"}
+                      src={
+                        getProductData("Coklat").img ||
+                        "/rasa-piscok/rasa-coklat.webp"
+                      }
                       alt="Coklat Lumer"
                       fill
                       className="object-cover"
@@ -285,7 +295,7 @@ export default function Home() {
                     />
                   </div>
                   <p className="relative z-20 text-white/50 text-center px-10 font-bold text-base max-w-sm mt-8 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                    {getProductData("coklat").description}
+                    {getProductData("Coklat").description}
                   </p>
                   {/* Arrow dipastikan di atas z-indexnya */}
                   <div className="absolute bottom-10 left-1/2 -translate-x-1/2 w-14 h-14 bg-white rounded-full flex items-center justify-center group-hover:scale-110 transition-all duration-500 shadow-2xl z-30">
@@ -305,7 +315,10 @@ export default function Home() {
                   </h3>
                   <div className="relative w-[85%] h-[300px] md:h-[400px] z-10 transition-transform duration-700 group-hover:scale-105 rounded-[3rem] overflow-hidden shadow-2xl border-4 border-black/5">
                     <Image
-                      src={getProductData("tiramisu").img || "/rasa-piscok/piscok-tiramisu.webp"}
+                      src={
+                        getProductData("tiramisu").img ||
+                        "/rasa-piscok/piscok-tiramisu.webp"
+                      }
                       alt="Tiramisu"
                       fill
                       className="object-cover"
@@ -331,7 +344,10 @@ export default function Home() {
                   </h3>
                   <div className="relative w-[85%] h-[300px] md:h-[400px] z-10 transition-transform duration-700 group-hover:scale-105 rounded-[3rem] overflow-hidden shadow-2xl border-4 border-white">
                     <Image
-                      src={getProductData("strawberry").img || "/rasa-piscok/piscok-starberry.webp"}
+                      src={
+                        getProductData("strawberry").img ||
+                        "/rasa-piscok/piscok-starberry.webp"
+                      }
                       alt="Strawberry"
                       fill
                       className="object-cover"
@@ -350,7 +366,9 @@ export default function Home() {
               <>
                 {/* Column 1: Samyang Nori */}
                 <div
-                  onClick={() => router.push(getProductRoute("samyang-nori"))}
+                  onClick={() =>
+                    router.push(getProductRoute("Samyang Roll Nori"))
+                  }
                   className="flex-1 w-full group relative flex flex-col items-center justify-start py-20 bg-[#1a2f1a] transition-all duration-700 cursor-pointer hover:bg-[#142414] min-h-[600px] md:min-h-[90vh]"
                 >
                   <h3 className="relative z-20 text-4xl md:text-6xl font-black uppercase text-white mb-10 text-center tracking-tight leading-none">
@@ -360,7 +378,10 @@ export default function Home() {
                   </h3>
                   <div className="relative w-[85%] h-[300px] md:h-[400px] z-10 transition-transform duration-700 group-hover:scale-105 rounded-[3rem] overflow-hidden shadow-2xl border-4 border-white/10">
                     <Image
-                      src={getProductData("samyang-nori").img || "/rasa-samyang/samyang-nori.webp"}
+                      src={
+                        getProductData("Samyang Roll Nori").img ||
+                        "/rasa-samyang/samyang-nori.webp"
+                      }
                       alt="Samyang Nori"
                       fill
                       className="object-cover"
@@ -368,7 +389,7 @@ export default function Home() {
                     />
                   </div>
                   <p className="relative z-20 text-white/50 text-center px-10 font-bold text-base max-w-sm mt-8 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                    {getProductData("nori").description}
+                    {getProductData("Samyang Roll Nori").description}
                   </p>
                   <div className="absolute bottom-10 left-1/2 -translate-x-1/2 w-14 h-14 bg-white rounded-full flex items-center justify-center group-hover:scale-110 transition-all duration-500 shadow-2xl z-30">
                     <ArrowRight className="w-7 h-7 -rotate-45 text-black" />
@@ -377,7 +398,9 @@ export default function Home() {
 
                 {/* Column 2: Samyang Keju */}
                 <div
-                  onClick={() => router.push(getProductRoute("samyang-keju"))}
+                  onClick={() =>
+                    router.push(getProductRoute("Samyang Roll Keju"))
+                  }
                   className="flex-1 w-full group relative flex flex-col items-center justify-start py-20 bg-white transition-all duration-700 cursor-pointer hover:bg-[#fcfcfa] md:border-l border-black/5 min-h-[600px] md:min-h-[90vh]"
                 >
                   <h3 className="relative z-20 text-4xl md:text-6xl font-black uppercase text-black mb-10 text-center tracking-tight leading-none">
@@ -387,7 +410,10 @@ export default function Home() {
                   </h3>
                   <div className="relative w-[85%] h-[300px] md:h-[400px] z-10 transition-transform duration-700 group-hover:scale-105 rounded-[3rem] overflow-hidden shadow-2xl border-4 border-black/5">
                     <Image
-                      src={getProductData("samyang-keju").img || "/rasa-samyang/samyang-keju.webp"}
+                      src={
+                        getProductData("Samyang Roll Keju").img ||
+                        "/rasa-samyang/samyang-keju.webp"
+                      }
                       alt="Samyang Keju"
                       fill
                       className="object-cover"
@@ -395,7 +421,7 @@ export default function Home() {
                     />
                   </div>
                   <p className="relative z-20 text-black/40 text-center px-10 font-bold text-base max-w-sm mt-8 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                    {getProductData("keju").description}
+                    {getProductData("Samyang Roll Keju").description}
                   </p>
                   <div className="absolute bottom-10 left-1/2 -translate-x-1/2 w-14 h-14 bg-red-600 rounded-full flex items-center justify-center group-hover:bg-red-700 group-hover:scale-110 transition-all duration-500 shadow-2xl z-30 text-white">
                     <ArrowRight className="w-7 h-7 -rotate-45" />

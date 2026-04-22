@@ -1,6 +1,7 @@
 {
   "powerquery.client.additionalSymbolsDirectories": [
-    "c:/lumeria/.vscode/excel-pq-symbols"
+    "c:/lumeria/.vscode/excel-pq-symbols",
+    "c:/Users/ADVAN/Downloads/Lumeri---Web-Produk/.vscode/excel-pq-symbols"
   ],
   "css.lint.unknownAtRules": "ignore"
 }

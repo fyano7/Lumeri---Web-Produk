@@ -131,9 +131,6 @@ export default function OrderPage() {
 
   useEffect(() => {
     const date = new Date();
-    const random = Math.floor(1000 + Math.random() * 9000);
-    setOrderId(`LMR-${date.getDate()}${date.getMonth() + 1}-${random}`);
-
     // Auto-select today if it's not Sunday
     const dayNames = [
       "Minggu",
@@ -220,6 +217,8 @@ export default function OrderPage() {
         imageBlob = await toBlob(receiptRef.current, {
           backgroundColor: "#fef3f2",
           quality: 0.95,
+          fontEmbedCSS: "",
+          skipFonts: true,
         });
       } catch (err) {
         console.error("Failed to capture receipt image:", err);
@@ -319,7 +318,7 @@ Silakan segera konfirmasi pesanan ini.
       const { data: orderData, error: orderError } = await supabase
         .from("orders")
         .insert(orderPayload)
-        .select("id")
+        .select("id") // Kita ambil ID yang baru digenerate Supabase
         .single();
 
       if (orderError || !orderData) {
@@ -333,6 +332,11 @@ Silakan segera konfirmasi pesanan ini.
         return;
       }
 
+
+        const dbId = orderData.id;
+        const shortId = `LMR-${dbId.toString().slice(-7).toUpperCase()}`;
+      setOrderId(shortId);
+      
       createdOrderId = orderData.id;
     } catch (err) {
       console.error("Exception simpan order:", err);
@@ -340,6 +344,8 @@ Silakan segera konfirmasi pesanan ini.
       alert("Terjadi kesalahan saat menyimpan pesanan. Coba lagi.");
       return;
     }
+
+  
 
     if (createdOrderId) {
       try {
@@ -833,7 +839,7 @@ Silakan segera konfirmasi pesanan ini.
                       </div>
                       <div className="text-right">
                         <p className="text-sm font-black text-black">
-                          {formatPrice(item.priceNumber * item.quantity)}
+                          {formatPrice(displayTotal)}
                         </p>
                       </div>
                     </div>

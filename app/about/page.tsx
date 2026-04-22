@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { gsap } from "gsap";
@@ -8,6 +8,8 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Navbar from "@/components/ui/Navbar";
 import Footer from "@/components/ui/Footer";
 import { Heart, Target, Users, Sparkles, ArrowRight } from "lucide-react";
+import { supabase } from "@/lib/supabase";
+
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -16,7 +18,29 @@ export default function AboutPage() {
   const section1Ref = useRef<HTMLDivElement>(null);
   const section2Ref = useRef<HTMLDivElement>(null);
   const section3Ref = useRef<HTMLDivElement>(null);
+  const [members, setMembers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
+  useEffect(() => {
+    async function fetchMembers() {
+      try {
+        setLoading(true);
+        const { data, error } = await supabase
+          .from("team_members")
+          .select("id, name, role, photo_url");
+
+        if (error) throw error;
+        if (data) setMembers(data);
+      } catch (error) {
+        console.error("Error fetching members:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchMembers();
+  }, []); // Kosongkan dependency agar hanya jalan sekali
+
+  // 2. useEffect KHUSUS untuk Animasi GSAP
   useEffect(() => {
     const ctx = gsap.context(() => {
       // Hero reveal animation
@@ -28,7 +52,7 @@ export default function AboutPage() {
         ease: "power4.out",
       });
 
-      // Parallax-like floating images
+      // Parallax floating images
       gsap.to(".floating-img-1", {
         y: -100,
         scrollTrigger: {
@@ -225,8 +249,55 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Second Image Highlight Section */}
-      <section className="py-24 px-6 max-w-7xl mx-auto overflow-hidden">
+      {/* Team Section */}
+      <section className="pt-24 pb-12 px-6 max-w-7xl mx-auto overflow-hidden" id="team">
+        {/* Header Section */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 md:mb-16 gap-6 w-full">
+          <div>
+            <h1 className="text-5xl md:text-6xl font-black mb-2 md:mb-0 uppercase tracking-tight text-[#1b2b5b] drop-shadow-lg">
+              Meet the Team
+            </h1>
+          </div>
+          <p className="max-w-md text-gray-500 font-medium text-base md:text-lg leading-relaxed">
+            Inilah para kreator di balik Lumeriá. Mereka bukan hanya jago
+            ngoding, tapi juga punya peran penting di balik produk dan inovasi
+            yang kamu nikmati!
+          </p>
+        </div>
+
+        {loading ? (
+          <div className="text-center text-xl font-bold text-[#e75a40] animate-pulse">
+            Loading...
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-10 w-full">
+            {members.map((member) => (
+              <div
+                key={member.id}
+                className="group bg-white rounded-3xl shadow-2xl p-8 flex flex-col items-center border border-[#e75a40]/20 hover:scale-105 hover:shadow-3xl transition-all duration-300"
+              >
+                <div className="w-28 h-28 relative rounded-full overflow-hidden border-4 border-[#e75a40] mb-4 group-hover:border-[#1b2b5b] transition-all duration-300">
+                  <Image
+                    src={member.photo_url}
+                    alt={member.name}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+                <div className="font-black text-2xl mb-1 text-[#1b2b5b] text-center group-hover:text-[#e75a40] transition-colors">
+                  {member.name}
+                </div>
+                <div className="inline-block bg-[#e75a40]/10 text-[#e75a40] font-semibold px-4 py-1 rounded-full text-sm text-center mt-1 uppercase tracking-wide">
+                  {member.role}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* Second Image Highlight Section (Inovasi) */}
+      <section className="pt-12 pb-24 px-6 max-w-7xl mx-auto overflow-hidden">
         <div className="flex flex-col lg:flex-row-reverse items-center gap-16 lg:gap-24 animate-up">
           <div className="flex-1 relative">
             <div className="relative aspect-[16/9] rounded-[3rem] overflow-hidden shadow-2xl transition-transform duration-700 hover:scale-[1.02]">
@@ -238,6 +309,7 @@ export default function AboutPage() {
               />
             </div>
           </div>
+
           <div className="flex-1">
             <h2 className="text-4xl md:text-5xl font-black text-black mb-8 leading-tight uppercase">
               Komitmen <br />{" "}
