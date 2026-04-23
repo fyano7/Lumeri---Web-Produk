@@ -373,7 +373,7 @@ export default function ProductDetailPage() {
 
               <div className="flex flex-row gap-4">
                 <Link
-                  href={`/products/${id}/order`}
+                  href={`/products/${id}/order?qty=${quantity}`}
                   className="flex-[1.5] h-16 bg-[#e75a40] text-white rounded-full font-black text-xl hover:scale-[1.02] transition-transform flex items-center justify-center gap-3 shadow-xl"
                 >
                   <MessageCircle className="w-6 h-6" />
@@ -418,7 +418,7 @@ export default function ProductDetailPage() {
       >
         <div className="flex-[5] flex gap-2">
           <Link
-            href={`/products/${id}/order`}
+            href={`/products/${id}/order?qty=${quantity}`}
             className="flex-1 h-12 bg-[#e75a40] text-white rounded-full font-black text-[9px] uppercase tracking-tighter flex items-center justify-center active:scale-95 transition-transform shadow-lg shadow-[#e75a40]/20 gap-1 px-2"
           >
             <MessageCircle className="w-4 h-4 shrink-0" />

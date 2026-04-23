@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { useRef } from "react";
@@ -53,11 +53,40 @@ const TIKUM_OPTIONS = ["Kelas", "Kantin", "Area TB (WhatsApp)"];
 export default function OrderPage() {
   const { id } = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { items, history, totalPrice, clearCart, addToHistory } = useCart();
   const [dbDirectProduct, setDbDirectProduct] = useState<any | null>(null);
 
   // Determine checkout mode: single product or entire cart
   const isDirectCheckout = id !== "all";
+
+  const directQuantity = (() => {
+    const qtyParam = searchParams?.get("qty");
+    const qty = Number(qtyParam);
+    return Number.isInteger(qty) && qty >= 3 ? qty : 3;
+  })();
+
+  const parsePriceNumber = (value: any) => {
+    if (typeof value === "number") return value;
+    if (typeof value === "string") {
+      return Number(value.replace(/[^0-9]/g, "")) || 0;
+    }
+    return 0;
+  };
+
+  const getDirectOrderTotal = (
+    priceNumber: number,
+    quantity: number,
+    name: string,
+  ) => {
+    const normalizedName = String(name || "").toLowerCase();
+    const isSamyang = normalizedName.includes("samyang");
+    const basePrice = priceNumber || (isSamyang ? 12000 : 10000);
+    const extraPrice = isSamyang ? 4000 : 3000;
+
+    if (quantity <= 3) return basePrice;
+    return basePrice + (quantity - 3) * extraPrice;
+  };
 
   const staticDirectProduct = isDirectCheckout
     ? PRODUCTS.find((p) =>
@@ -79,27 +108,20 @@ export default function OrderPage() {
             id: directProduct.id,
             name: directProduct.name,
             price: directProduct.price,
-            priceNumber: Number(
-              directProduct.price
-                ? String(directProduct.price)
-                    .replace(/[^0-9]/g, "")
-                : 0,
-            ),
+            priceNumber: parsePriceNumber(directProduct.price),
             img: directProduct.image_url || directProduct.img || directProduct.image,
-            quantity: 1,
+            quantity: directQuantity,
           },
         ]
       : items;
 
   const orderTotal = (() => {
     if (isDirectCheckout && directProduct) {
-      const priceValue = directProduct.price;
-      if (typeof priceValue === "number") return priceValue;
-      if (typeof priceValue === "string") {
-        const cleaned = priceValue.replace(/[^0-9]/g, "");
-        return Number(cleaned) || 0;
-      }
-      return 0;
+      return getDirectOrderTotal(
+        parsePriceNumber(directProduct.price),
+        directQuantity,
+        directProduct.name,
+      );
     }
     return totalPrice;
   })();
