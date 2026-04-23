@@ -144,7 +144,7 @@ export default function Home() {
   return (
     <div
       ref={container}
-      className="relative w-full min-h-screen font-sans selection:bg-black selection:text-white transition-colors duration-700"
+      className="relative w-full min-h-screen font-sans selection:bg-black selection:text-white transition-colors duration-700 overflow-x-hidden"
     >
       <Navbar />
       <div
@@ -191,67 +191,6 @@ export default function Home() {
               ? "Piscok lumer di luar, renyah di dalam."
               : "Samyang Roll pedas mantap, krispi maksimal."}
           </p>
-
-          {/* Switcher & Flavor Buttons */}
-          <div className="flex flex-col items-center gap-10 relative z-50">
-            <div className="flex items-center p-1.5 bg-black/[0.03] backdrop-blur-3xl rounded-full border border-black/10 relative w-fit">
-              <div
-                className={`absolute top-1.5 bottom-1.5 rounded-full bg-white shadow-md transition-all duration-700 ${activeProduct === "piscok" ? "left-1.5 w-[140px]" : "left-[145.5px] w-[160px]"}`}
-              />
-              <button
-                onClick={() => {
-                  setActiveProduct("piscok");
-                  setActiveFlavor("tiramisu");
-                }}
-                className={`relative z-10 px-8 py-3 rounded-full font-black text-xs uppercase w-[140px] ${activeProduct === "piscok" ? "text-black" : "text-black/40"}`}
-              >
-                Piscok
-              </button>
-              <button
-                onClick={() => {
-                  setActiveProduct("samyang");
-                  setActiveFlavor("samyang-nori");
-                }}
-                className={`relative z-10 px-8 py-3 rounded-full font-black text-xs uppercase w-[160px] ${activeProduct === "samyang" ? "text-black" : "text-black/40"}`}
-              >
-                Samyang
-              </button>
-            </div>
-
-            <div className="flex flex-wrap items-center justify-center gap-4 bg-white/30 p-2.5 rounded-full backdrop-blur-3xl border border-white/40">
-              {activeProduct === "piscok"
-                ? ["coklat", "tiramisu", "strawberry"].map((f) => (
-                    <button
-                      key={f}
-                      onClick={() => setActiveFlavor(f)}
-                      className={`flex items-center gap-2.5 px-6 py-3 rounded-full font-black text-[10px] uppercase transition-all duration-500 ${activeFlavor === f ? "bg-white text-black shadow-xl scale-105" : "text-black/30"}`}
-                    >
-                      <div
-                        className="w-2.5 h-2.5 rounded-full"
-                        style={{
-                          backgroundColor:
-                            f === "coklat"
-                              ? "#3d1f1b"
-                              : f === "tiramisu"
-                                ? "#c1a286"
-                                : "#ff8da1",
-                        }}
-                      />
-                      {f}
-                    </button>
-                  ))
-                : ["samyang-nori", "samyang-keju"].map((f) => (
-                    <button
-                      key={f}
-                      onClick={() => setActiveFlavor(f)}
-                      className={`flex items-center gap-2.5 px-6 py-3 rounded-full font-black text-[10px] uppercase transition-all duration-500 ${activeFlavor === f ? "bg-red-600 text-white shadow-xl scale-105" : "text-black/30"}`}
-                    >
-                      <div className="w-2.5 h-2.5 rounded-full bg-current" />
-                      {f.replace("samyang-", "")}
-                    </button>
-                  ))}
-            </div>
-          </div>
         </section>
 
         {/* Dynamic Product Menu Section - FIXED HEIGHT & ARROW */}
@@ -294,9 +233,13 @@ export default function Home() {
                       unoptimized
                     />
                   </div>
-                  <p className="relative z-20 text-white/50 text-center px-10 font-bold text-base max-w-sm mt-8 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                    {getProductData("Coklat").description}
-                  </p>
+                  <div className="relative z-20 mt-8 px-6 opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-y-4 group-hover:translate-y-0">
+                    <div className="bg-black/20 backdrop-blur-md p-4 rounded-2xl">
+                      <p className="text-white text-center text-sm md:text-base leading-relaxed font-medium">
+                        {getProductData("Coklat").description}
+                      </p>
+                    </div>
+                  </div>
                   {/* Arrow dipastikan di atas z-indexnya */}
                   <div className="absolute bottom-10 left-1/2 -translate-x-1/2 w-14 h-14 bg-white rounded-full flex items-center justify-center group-hover:scale-110 transition-all duration-500 shadow-2xl z-30">
                     <ArrowRight className="w-7 h-7 -rotate-45 text-black" />
@@ -325,9 +268,13 @@ export default function Home() {
                       unoptimized
                     />
                   </div>
-                  <p className="relative z-20 text-black/40 text-center px-10 font-bold text-base max-w-sm mt-8 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                    {getProductData("tiramisu").description}
-                  </p>
+                  <div className="relative z-20 mt-8 px-6 opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-y-4 group-hover:translate-y-0">
+                    <div className="bg-black/20 backdrop-blur-md p-4 rounded-2xl border">
+                      <p className="text-white text-center text-sm md:text-base leading-relaxed font-medium">
+                        {getProductData("tiramisu").description}
+                      </p>
+                    </div>
+                  </div>
                   <div className="absolute bottom-10 left-1/2 -translate-x-1/2 w-14 h-14 bg-black text-white rounded-full flex items-center justify-center group-hover:scale-110 transition-all duration-500 shadow-2xl z-30">
                     <ArrowRight className="w-7 h-7 -rotate-45" />
                   </div>
@@ -354,9 +301,13 @@ export default function Home() {
                       unoptimized
                     />
                   </div>
-                  <p className="relative z-20 text-black/40 text-center px-10 font-bold text-base max-w-sm mt-8 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                    {getProductData("strawberry").description}
-                  </p>
+                  <div className="relative z-20 mt-8 px-6 opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-y-4 group-hover:translate-y-0">
+                    <div className="bg-[#ffe4e900] backdrop-blur-md p-4 rounded-2xl ">
+                      <p className="text-[#3d1f1b] text-center text-sm md:text-base leading-relaxed font-medium">
+                        {getProductData("strawberry").description}
+                      </p>
+                    </div>
+                  </div>
                   <div className="absolute bottom-10 left-1/2 -translate-x-1/2 w-14 h-14 bg-black text-white rounded-full flex items-center justify-center group-hover:scale-110 transition-all duration-500 shadow-2xl z-30">
                     <ArrowRight className="w-7 h-7 -rotate-45" />
                   </div>
@@ -388,9 +339,13 @@ export default function Home() {
                       unoptimized
                     />
                   </div>
-                  <p className="relative z-20 text-white/50 text-center px-10 font-bold text-base max-w-sm mt-8 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                    {getProductData("Samyang Roll Nori").description}
-                  </p>
+                  <div className="relative z-20 mt-8 px-6 opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-y-4 group-hover:translate-y-0">
+                    <div className="bg-black/20 backdrop-blur-md p-4 rounded-2xl">
+                      <p className="text-white text-center text-sm md:text-base leading-relaxed font-medium">
+                        {getProductData("Samyang Roll Nori").description}
+                      </p>
+                    </div>
+                  </div>
                   <div className="absolute bottom-10 left-1/2 -translate-x-1/2 w-14 h-14 bg-white rounded-full flex items-center justify-center group-hover:scale-110 transition-all duration-500 shadow-2xl z-30">
                     <ArrowRight className="w-7 h-7 -rotate-45 text-black" />
                   </div>
@@ -420,9 +375,13 @@ export default function Home() {
                       unoptimized
                     />
                   </div>
-                  <p className="relative z-20 text-black/40 text-center px-10 font-bold text-base max-w-sm mt-8 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                    {getProductData("Samyang Roll Keju").description}
-                  </p>
+                  <div className="relative z-20 mt-8 px-6 opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-y-4 group-hover:translate-y-0">
+                    <div className="bg-[#ffe4e900] backdrop-blur-md p-4 rounded-2xl border">
+                      <p className="text-[#1a2f1a] text-center text-sm md:text-base leading-relaxed font-medium">
+                        {getProductData("Samyang Roll Keju").description}
+                      </p>
+                    </div>
+                  </div>
                   <div className="absolute bottom-10 left-1/2 -translate-x-1/2 w-14 h-14 bg-red-600 rounded-full flex items-center justify-center group-hover:bg-red-700 group-hover:scale-110 transition-all duration-500 shadow-2xl z-30 text-white">
                     <ArrowRight className="w-7 h-7 -rotate-45" />
                   </div>
@@ -441,7 +400,10 @@ export default function Home() {
 
           <div
             className="relative w-full max-w-[900px] aspect-[2.4/1] mb-12 group"
-            onMouseLeave={() => setActiveMember(null)}
+            onMouseLeave={() => {
+              setActiveMember(null);
+              setSelectedMember(null);
+            }}
           >
             <Image
               src="/member/member_revisi.webp"
@@ -475,9 +437,9 @@ export default function Home() {
               ))}
             </div>
 
-            {selectedMember && (
-              <div className="absolute z-40 left-1/2 -translate-x-1/2 bottom-[105%] w-[calc(100vw-48px)] max-w-[450px]">
-                <div className="relative bg-white/95 backdrop-blur-xl border border-black/5 rounded-3xl p-6 shadow-2xl flex flex-col items-center animate-in fade-in slide-in-from-top-4 duration-500">
+            {selectedMember && selectedMember.role && (
+              <div className="absolute z-40 left-6 right-6 top-full mt-4 mx-auto max-w-[450px]">
+                <div className="relative bg-white/95 backdrop-blur-xl border border-black/5 rounded-3xl p-6 shadow-2xl flex flex-col items-center animate-in fade-in duration-500">
                   <div className="w-full text-center">
                     <div className="flex items-center justify-between mb-1">
                       <h4 className="font-black text-black text-lg">
@@ -506,7 +468,7 @@ export default function Home() {
                   </div>
 
                   <div
-                    className="absolute -bottom-2 w-4 h-4 bg-white rotate-45 border-b border-r border-black/5"
+                    className="absolute -top-2 w-4 h-4 bg-white rotate-45 border-b border-r border-black/5"
                     style={{
                       left: `${(MEMBERS_DATA.findIndex((m) => m.id === selectedMember.id) / MEMBERS_DATA.length) * 100 + 50 / MEMBERS_DATA.length}%`,
                     }}
