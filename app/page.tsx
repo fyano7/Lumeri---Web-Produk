@@ -118,13 +118,16 @@ export default function Home() {
 
   useEffect(() => {
     let color = "#ffffff";
+
     if (activeProduct === "piscok") {
       if (activeFlavor === "coklat") color = "#3d1f1b";
       else if (activeFlavor === "strawberry") color = "#fff0f3";
-      else color = "#fdf5e6";
+      else if (activeFlavor === "tiramisu") color = "#fdf5e6";
     } else {
-      color = activeFlavor === "samyang-keju" ? "#fef2f2" : "#fff7ed";
+      if (activeFlavor === "samyang-nori") color = "#346739";
+      else if (activeFlavor === "samyang-keju") color = "#fff7cc";
     }
+
     document.body.style.backgroundColor = color;
   }, [activeFlavor, activeProduct]);
 
@@ -191,6 +194,67 @@ export default function Home() {
               ? "Piscok lumer di luar, renyah di dalam."
               : "Samyang Roll pedas mantap, krispi maksimal."}
           </p>
+
+          {/* Switcher & Flavor Buttons */}
+          <div className="flex flex-col items-center gap-10 relative z-50">
+            <div className="flex items-center p-1.5 bg-black/[0.03] backdrop-blur-3xl rounded-full border border-black/10 relative w-fit">
+              <div
+                className={`absolute top-1.5 bottom-1.5 rounded-full bg-white shadow-md transition-all duration-700 ${activeProduct === "piscok" ? "left-1.5 w-[140px]" : "left-[145.5px] w-[160px]"}`}
+              />
+              <button
+                onClick={() => {
+                  setActiveProduct("piscok");
+                  setActiveFlavor("tiramisu");
+                }}
+                className={`relative z-10 px-8 py-3 rounded-full font-black text-xs uppercase w-[140px] ${activeProduct === "piscok" ? "text-black" : "text-black/40"}`}
+              >
+                Piscok
+              </button>
+              <button
+                onClick={() => {
+                  setActiveProduct("samyang");
+                  setActiveFlavor("samyang-nori");
+                }}
+                className={`relative z-10 px-8 py-3 rounded-full font-black text-xs uppercase w-[160px] ${activeProduct === "samyang" ? "text-black" : "text-black/40"}`}
+              >
+                Samyang
+              </button>
+            </div>
+
+            <div className="flex flex-wrap items-center justify-center gap-4 bg-white/30 p-2.5 rounded-full backdrop-blur-3xl border border-white/40">
+              {activeProduct === "piscok"
+                ? ["coklat", "tiramisu", "strawberry"].map((f) => (
+                    <button
+                      key={f}
+                      onClick={() => setActiveFlavor(f)}
+                      className={`flex items-center gap-2.5 px-6 py-3 rounded-full font-black text-[10px] uppercase transition-all duration-500 ${activeFlavor === f ? "bg-white text-black shadow-xl scale-105" : "text-black/30"}`}
+                    >
+                      <div
+                        className="w-2.5 h-2.5 rounded-full"
+                        style={{
+                          backgroundColor:
+                            f === "coklat"
+                              ? "#3d1f1b"
+                              : f === "tiramisu"
+                                ? "#c1a286"
+                                : "#ff8da1",
+                        }}
+                      />
+                      {f}
+                    </button>
+                  ))
+                : ["samyang-nori", "samyang-keju"].map((f) => (
+                    <button
+                      key={f}
+                      onClick={() => setActiveFlavor(f)}
+                      className={`flex items-center gap-2.5 px-6 py-3 rounded-full font-black text-[10px] uppercase transition-all duration-500 ${activeFlavor === f ? "bg-red-600 text-white shadow-xl scale-105" : "text-black/30"}`}
+                    >
+                      <div className="w-2.5 h-2.5 rounded-full bg-current" />
+                      {f.replace("samyang-", "")}
+                    </button>
+                  ))}
+            </div>
+          </div>
         </section>
 
         {/* Dynamic Product Menu Section - FIXED HEIGHT & ARROW */}
